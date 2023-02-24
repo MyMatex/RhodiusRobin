@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+	<soap:Body>
+		<CreateQuickSalesOrder xmlns="http://mac-its.com/Service4Mac" xmlns:ns2="urn:microsoft-dynamics-schemas/page/quicksalesorder" xmlns:ns3="urn:microsoft-dynamics-nav/xmlports/x5105058">
+			<pRC>
+				<Server>X</Server>
+				<Port>X</Port>
+				<NavServiceName>RHO110_STG_WS</NavServiceName>
+				<Company>Rhodius</Company>
+				<ServiceType>Page</ServiceType>
+				<AppUserKey>X</AppUserKey>
+			</pRC>
+			<pQuickSalesOrder>
+				<ns2:Document_Type5295337>Order</ns2:Document_Type5295337>
+				<ns2:External_Document_No>{{orderId}}</ns2:External_Document_No> <!-- Shopify Internal Order No -->
+				<ns2:Order_Date>2023-02-21</ns2:Order_Date>
+				<ns2:Order_Time>16:00:01</ns2:Order_Time>
+				<ns2:Sell_to_Country_Region_Code>DE</ns2:Sell_to_Country_Region_Code>
+				<ns2:Sell_to_Cust_Salutation_Code>H</ns2:Sell_to_Cust_Salutation_Code> <!-- H = Male / F = Female -->
+				<ns2:Sell_to_Customer_No>RHODIUS000003</ns2:Sell_to_Customer_No> <!-- Shopify Internal Customer No -->
+				<ns2:Sell_to_Customer_Name>Tobias Testmaier</ns2:Sell_to_Customer_Name>
+				<ns2:Sell_to_Customer_First_Name>Tobias</ns2:Sell_to_Customer_First_Name>
+				<ns2:Sell_to_Customer_Surname>Testmaier</ns2:Sell_to_Customer_Surname>
+				<ns2:Sell_to_Street>Wienburgstr</ns2:Sell_to_Street>
+				<ns2:Sell_to_House_No>207</ns2:Sell_to_House_No>
+				<ns2:Sell_to_House_No_Adding/>
+				<ns2:Sell_to_Address_2/>
+				<ns2:Sell_to_City>Münster</ns2:Sell_to_City>
+				<ns2:Sell_to_Post_Code>48159</ns2:Sell_to_Post_Code>
+				<ns2:Sell_to_E_Mail>Tobias.Testmaier@fiege.com</ns2:Sell_to_E_Mail> <!-- Customer E-Mail -->
+				<ns2:Sell_to_Cust_Type>Person</ns2:Sell_to_Cust_Type> <!-- fix -->
+				<ns2:Amount>18.00</ns2:Amount> <!-- Total Order Amount incl. Shipment, Deposit etc. -->
+				<ns2:Shipping_Charge_Amount>0.00</ns2:Shipping_Charge_Amount>
+				<ns2:Shipping_Charge_free>true</ns2:Shipping_Charge_free> <!-- true / false -->
+				<ns2:Payment_Method_Code>PP_MPAY</ns2:Payment_Method_Code>
+				<ns2:PSP_Organisation>PAYPAL</ns2:PSP_Organisation>
+				<ns2:External_Reference_No>67B47441X1525480M</ns2:External_Reference_No>
+				<ns2:External_Transaction_No>dff30c9f-7bc6-4abb-8bc1-8d233234e6f9</ns2:External_Transaction_No> 
+				<ns2:Ship_to_Cust_Salutation_Code>H</ns2:Ship_to_Cust_Salutation_Code>
+				<ns2:Ship_to_Country_Region_Code>DE</ns2:Ship_to_Country_Region_Code>
+				<ns2:Ship_to_Name>Tobias Testmaier</ns2:Ship_to_Name>
+				<ns2:Ship_to_Customer_First_Name>Tobias</ns2:Ship_to_Customer_First_Name>
+				<ns2:Ship_to_Customer_Surname>Testmaier</ns2:Ship_to_Customer_Surname>
+				<ns2:Ship_to_Street>Wienburgstr</ns2:Ship_to_Street>
+				<ns2:Ship_to_House_No>207</ns2:Ship_to_House_No>
+				<ns2:Ship_to_House_No_Adding/>
+				<ns2:Ship_to_Address_2/>
+				<ns2:Ship_to_City>Münster</ns2:Ship_to_City>
+				<ns2:Ship_to_Post_Code>48159</ns2:Ship_to_Post_Code>
+				<ns2:Shipping_Agent_Code>DHL</ns2:Shipping_Agent_Code>
+				<ns2:Shipping_Agent_Service_Code>STANDARD</ns2:Shipping_Agent_Service_Code> <!-- VERIFYAGE -->
+				<ns2:Language_Code>DEU</ns2:Language_Code>
+				<ns2:Prices_Including_VAT>true</ns2:Prices_Including_VAT> <!-- fix -->
+				<ns2:Promotion_Medium_No>RHODIUS.DE</ns2:Promotion_Medium_No> <!-- fix -->
+				<ns2:Promotion_Medium_Trg_Grp_No>STD</ns2:Promotion_Medium_Trg_Grp_No> <!-- fix -->
+				<ns2:ShipTo_is_SellTo>true</ns2:ShipTo_is_SellTo>
+				<ns2:Currency_Code>EUR</ns2:Currency_Code>
+				<ns2:QuickSalesLines>
+					<ns2:Quick_Sales_Subform_WebService>
+						<ns2:Document_Type>Order</ns2:Document_Type> <!-- fix -->
+						<ns2:Line_No>10000</ns2:Line_No> <!-- 10000 , 20000.... -->
+						<ns2:LineType>Item</ns2:LineType>  <!-- fix -->
+						<ns2:No>123456789</ns2:No> <!-- Specific Item No -->
+						<ns2:Description>Testitem</ns2:Description> <!-- Item Description used for documents, emails etc. -->
+						<ns2:Variant_Code/>
+						<ns2:Unit_of_Measure_Code>STK</ns2:Unit_of_Measure_Code> <!-- fix -->
+						<ns2:Quantity>1</ns2:Quantity>
+						<ns2:Unit_Price>15.00</ns2:Unit_Price>
+						<ns2:Item_used_as>Item</ns2:Item_used_as> <!-- fix -->
+						<ns2:Line_Discount_Amount>0.00</ns2:Line_Discount_Amount>
+					</ns2:Quick_Sales_Subform_WebService>
+					<ns2:Quick_Sales_Subform_WebService>
+						<ns2:Document_Type>Order</ns2:Document_Type>
+						<ns2:Line_No>20000</ns2:Line_No>
+						<ns2:LineType>Item</ns2:LineType>
+						<ns2:No>DEPOSITITEM</ns2:No> <!-- fix DEPOSITITEM -->
+						<ns2:Description>Pfand</ns2:Description> <!-- tbd with Rhodius -->
+						<ns2:Variant_Code/>
+						<ns2:Unit_of_Measure_Code>STK</ns2:Unit_of_Measure_Code>
+						<ns2:Quantity>1</ns2:Quantity>
+						<ns2:Unit_Price>3.00</ns2:Unit_Price>
+						<ns2:Item_used_as>Item</ns2:Item_used_as>
+						<ns2:Line_Discount_Amount>0.00</ns2:Line_Discount_Amount>
+					</ns2:Quick_Sales_Subform_WebService>
+				</ns2:QuickSalesLines>
+                    <ns2:DocumentValue>
+					<ns2:Quick_Sales_Sub_Doc_Val_WS>
+						<ns2:Line_No>0</ns2:Line_No>
+						<ns2:Entry_No>1</ns2:Entry_No>
+						<ns2:Identifier>FREEITEM</ns2:Identifier>
+						<ns2:ValueText>Autograph Card</ns2:ValueText> <!-- tbd with Rhodius when to be added -->
+					</ns2:Quick_Sales_Sub_Doc_Val_WS>
+					<ns2:Quick_Sales_Sub_Doc_Val_WS>
+						<ns2:Line_No>20000</ns2:Line_No> <!-- Line No. referring DEPOSITITEM -->
+						<ns2:Entry_No>2</ns2:Entry_No> 
+						<ns2:Identifier>DEPOSIT</ns2:Identifier> <!-- fix -->
+         				<ns2:DocValKey>DEPOSITITEM</ns2:DocValKey> <!-- DEPOSITITEM (fix) -->
+						<ns2:ValueCode>123456789</ns2:ValueCode> <!-- referring ITEM No-->
+					</ns2:Quick_Sales_Sub_Doc_Val_WS>
+                    </ns2:DocumentValue>
+			</pQuickSalesOrder>
+		</CreateQuickSalesOrder>
+	</soap:Body>
+</soap:Envelope>
