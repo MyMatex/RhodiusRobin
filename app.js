@@ -8,16 +8,32 @@ require('dotenv').config()
 const app = express();
 const PORT = 3000;
 const getProductsFromLines = lines => {
-    return lines.map((line, i) => ({
-        genNumber: `${i + 1}0000`,
-        number: line.id,
-        description: line.title,
-        quantity: line.quantity,
-        price: line.price,
-        discount: line.discount_allocations[0] ? line.discount_allocations[0] : '0.00'
-    }))
+    return lines.map((line, i) => {
+        return {
+            genNumber: `${i + 1}0000`,
+            number: line.id,
+            description: line.title,
+            quantity: line.quantity,
+            price: line.price,
+            discount: line.discount_allocations[0] ? line.discount_allocations[0] : '0.00'
+        }
+    })
+}
+const getSpecialItemsFromProducts = products => {
+    return products.map(product => {
+        if(product.price === 0) {
+            return {
+                genNumber: product.genNumber,
+                number: product.number,
+                id: 'FREEITEM',
+                description: product.description
+            }
+        }
+    })
 }
 const orderRequestAdapter = shopifyOrder => {
+    const products = getProductsFromLines(shopifyOrder.line_items)
+    const specialItems = getSpecialItemsFromProducts(products)
     return {
         config: {
             ip: process.env.FIEGE_SERVER_IP,
@@ -55,13 +71,13 @@ const orderRequestAdapter = shopifyOrder => {
             transactionId: shopifyOrder.checkout_token,
             currency: shopifyOrder.currency 
         },
-        products: getProductsFromLines(shopifyOrder.line_items)
+        products,
+        specialItems: specialItems[0] !== undefined ? specialItems : []
     }
 }
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const createOrderRequest = orders => {
-    
     const url = process.env.FIEGE_ENDPOINT;
     const sampleHeaders = {
     'user-agent': 'sampleTest',
@@ -85,6 +101,22 @@ app.get('/:status', async (req, res)=>{
         const orderRequests = createOrderRequest(orders.data.orders)
         const ordersResponse = await Promise.allSettled(orderRequests)
         res.send(ordersResponse);
+    } catch(e) {
+        console.log(e)
+        res.status(500).send(e.message)
+    }
+
+});
+app.get('/test/:status', async (req, res)=>{
+    try {
+        const { status } = req.params
+        const orders = await axios.get(
+            `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/orders.json?status=${status}`
+            )
+        const xml = fs.readFileSync('request/createOrder.xml', 'utf-8');
+        const adaptedData = orderRequestAdapter(orders.data.orders[0])
+        const output = Mustache.render(xml, adaptedData);
+        res.send(output);
     } catch(e) {
         console.log(e)
         res.status(500).send(e.message)
