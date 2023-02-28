@@ -19,7 +19,7 @@ const getProductsFromLines = lines => {
             description: line.title,
             quantity: line.quantity,
             price: line.price,
-            discount: line.discount_allocations[0] ? line.discount_allocations[0] : '0.00'
+            discount: line.total_discount
         }
     })
 }
