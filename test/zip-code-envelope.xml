@@ -48,7 +48,7 @@
 				<ns2:Ship_to_City>Münster</ns2:Ship_to_City>
 				<ns2:Ship_to_Post_Code>48159</ns2:Ship_to_Post_Code>
 				<ns2:Shipping_Agent_Code>DHL</ns2:Shipping_Agent_Code>
-				<ns2:Shipping_Agent_Service_Code>STANDARD</ns2:Shipping_Agent_Service_Code> <!-- VERIFYAGE -->
+				<ns2:Shipping_Agent_Service_Code>STANDARD</ns2:Shipping_Agent_Service_Code> <!-- VERIFYAGE --> <!-- TO BE DONE -->
 				<ns2:Language_Code>DEU</ns2:Language_Code>
 				<ns2:Prices_Including_VAT>true</ns2:Prices_Including_VAT> <!-- fix -->
 				<ns2:Promotion_Medium_No>RHODIUS.DE</ns2:Promotion_Medium_No> <!-- fix -->
@@ -60,7 +60,7 @@
 						<ns2:Document_Type>Order</ns2:Document_Type> <!-- fix -->
 						<ns2:Line_No>10000</ns2:Line_No> <!-- 10000 , 20000.... -->
 						<ns2:LineType>Item</ns2:LineType>  <!-- fix -->
-						<ns2:No>123456789</ns2:No> <!-- Specific Item No -->
+						<ns2:No>123456789</ns2:No> <!-- Specific Item No --> <!-- SKU ITEM & RECYLCED ITEM-->
 						<ns2:Description>Testitem</ns2:Description> <!-- Item Description used for documents, emails etc. -->
 						<ns2:Variant_Code/>
 						<ns2:Unit_of_Measure_Code>STK</ns2:Unit_of_Measure_Code> <!-- fix -->

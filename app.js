@@ -7,11 +7,15 @@ const { getGender } = require('gender-detection-from-name');
 require('dotenv').config()
 const app = express();
 const PORT = 3000;
+
+const SKU = '760155#DI#VERIFYAGE'
 const getProductsFromLines = lines => {
     return lines.map((line, i) => {
+        const [id, deposit] = line.sku.split('#');
+        const number = deposit === 'DI' ? 'DEPOSITITEM' : id;
         return {
             genNumber: `${i + 1}0000`,
-            number: line.id,
+            number,
             description: line.title,
             quantity: line.quantity,
             price: line.price,
@@ -31,6 +35,13 @@ const getSpecialItemsFromProducts = products => {
         }
     })
 }
+const getServiceCode = products => {
+    const foundItem = products.find(product => {
+        const serviceCode = product.sku.split('#')[2];
+        return serviceCode === 'VERIFYAGE';
+    })
+    return foundItem ? 'VERIFYAGE' : 'STANDARD'
+}
 const orderRequestAdapter = shopifyOrder => {
     const products = getProductsFromLines(shopifyOrder.line_items)
     const specialItems = getSpecialItemsFromProducts(products)
@@ -41,9 +52,9 @@ const orderRequestAdapter = shopifyOrder => {
             key: process.env.FIEGE_SERVER_KEY
         },
         order : {
-            id: shopifyOrder.id,
+            id: shopifyOrder.id + Date.now(),
             date: shopifyOrder.created_at.split('T')[0],
-            time: shopifyOrder.created_at.split('T')[1]
+            time: shopifyOrder.created_at.split('T')[1],
         },
         customer: {
             gender: getGender(shopifyOrder.customer.firstName)[0].toUpperCase(),
@@ -59,7 +70,8 @@ const orderRequestAdapter = shopifyOrder => {
                 number: 1,
                 city: shopifyOrder.shipping_address.city,
                 postalCode: shopifyOrder.shipping_address.zip
-            }
+            },
+            serviceCode: getServiceCode(products)
         },
         payment: {
             amount: shopifyOrder.current_total_price,
@@ -84,11 +96,11 @@ const createOrderRequest = orders => {
     'Content-Type': 'text/xml;charset=UTF-8',
     };
     return orders.map(async order => {
-        await sleep(100)
+        await sleep(1000)
         const xml = fs.readFileSync('request/createOrder.xml', 'utf-8');
         const adaptedData = orderRequestAdapter(order)
         const output = Mustache.render(xml, adaptedData);
-        return soapRequest({ url: url, headers: sampleHeaders, xml: output, timeout: 100000 });
+        return soapRequest({ url: url, headers: sampleHeaders, xml: output, timeout: 200000 });
     })
 }
 

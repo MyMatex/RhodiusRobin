@@ -48,7 +48,7 @@
 				<ns2:Ship_to_City>{{shipping.address.city}}</ns2:Ship_to_City>
 				<ns2:Ship_to_Post_Code>{{shipping.address.postalCode}}</ns2:Ship_to_Post_Code>
 				<ns2:Shipping_Agent_Code>DHL</ns2:Shipping_Agent_Code>
-				<ns2:Shipping_Agent_Service_Code>STANDARD</ns2:Shipping_Agent_Service_Code> <!-- VERIFYAGE -->
+				<ns2:Shipping_Agent_Service_Code>{{shiping.serviceCode}}</ns2:Shipping_Agent_Service_Code> <!-- VERIFYAGE -->
 				<ns2:Language_Code>DEU</ns2:Language_Code>
 				<ns2:Prices_Including_VAT>true</ns2:Prices_Including_VAT> <!-- fix -->
 				<ns2:Promotion_Medium_No>RHODIUS.DE</ns2:Promotion_Medium_No> <!-- fix -->
