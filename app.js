@@ -104,6 +104,8 @@ const createOrderRequest = orders => {
     })
 }
 
+const findProductBySku = (products, sku) => products.find(product => product.variants[0].sku.split('#')[0] === sku)
+
 app.get('/:status', async (req, res)=>{
     try {
         const { status } = req.params
@@ -129,6 +131,34 @@ app.get('/test/:status', async (req, res)=>{
         const adaptedData = orderRequestAdapter(orders.data.orders[0])
         const output = Mustache.render(xml, adaptedData);
         res.send(output);
+    } catch(e) {
+        console.log(e)
+        res.status(500).send(e.message)
+    }
+
+});
+
+app.put('/test/update/:sku/:quantity', async (req, res)=>{
+    try {
+        const productsPromise = axios.get(
+            `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2022-10/products.json`
+            )
+        const locationsPromise = axios.get(
+            `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/locations.json`
+            )
+        const [products, locations] = await Promise.all([productsPromise, locationsPromise])
+        const product = findProductBySku(products.data.products, req.params.sku)
+        const location = locations.data.locations[0]
+        const payload = {
+            "location_id":location.id,
+            "inventory_item_id":product.variants[0].inventory_item_id,
+            "available":req.params.quantity
+        };
+        const inventory = await axios.post(
+            `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/inventory_levels/set.json`, 
+            payload
+            );
+        res.send(inventory.data);
     } catch(e) {
         console.log(e)
         res.status(500).send(e.message)
