@@ -8,12 +8,12 @@ require('dotenv').config()
 const app = express();
 const PORT = 3000;
 
-const SKU = '760155#DI#VERIFYAGE'
 const getProductsFromLines = lines => {
     return lines.map((line, i) => {
         const [id, deposit] = line.sku.split('#');
         const number = deposit === 'DI' ? 'DEPOSITITEM' : id;
         return {
+            sku: line.sku,
             genNumber: `${i + 1}0000`,
             number,
             description: line.title,
@@ -35,6 +35,18 @@ const getSpecialItemsFromProducts = products => {
         }
     })
 }
+const getDepositItemsFromProducts = products => {
+    return products.map((product, index) => {
+        const [id, deposit] = product.sku.split('#')
+        if(deposit === 'DI') {
+            return {
+                genNumber: product.genNumber,
+                number: index,
+                id,
+            }
+        }
+    })
+}
 const getServiceCode = products => {
     const foundItem = products.find(product => {
         const serviceCode = product.sku.split('#')[2];
@@ -45,6 +57,7 @@ const getServiceCode = products => {
 const orderRequestAdapter = shopifyOrder => {
     const products = getProductsFromLines(shopifyOrder.line_items)
     const specialItems = getSpecialItemsFromProducts(products)
+    const depositItems = getDepositItemsFromProducts(products)
     return {
         config: {
             ip: process.env.FIEGE_SERVER_IP,
@@ -52,7 +65,7 @@ const orderRequestAdapter = shopifyOrder => {
             key: process.env.FIEGE_SERVER_KEY
         },
         order : {
-            id: shopifyOrder.id + Date.now(),
+            id: shopifyOrder.id,
             date: shopifyOrder.created_at.split('T')[0],
             time: shopifyOrder.created_at.split('T')[1],
         },
@@ -84,7 +97,8 @@ const orderRequestAdapter = shopifyOrder => {
             currency: shopifyOrder.currency 
         },
         products,
-        specialItems: specialItems[0] !== undefined ? specialItems : []
+        specialItems: specialItems[0] ? specialItems : [],
+        depositItems: depositItems[0] ? depositItems : []
     }
 }
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -128,7 +142,7 @@ app.get('/test/:status', async (req, res)=>{
             `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/orders.json?status=${status}`
             )
         const xml = fs.readFileSync('request/createOrder.xml', 'utf-8');
-        const adaptedData = orderRequestAdapter(orders.data.orders[0])
+        const adaptedData = orderRequestAdapter(orders.data.orders[1])
         const output = Mustache.render(xml, adaptedData);
         res.send(output);
     } catch(e) {
