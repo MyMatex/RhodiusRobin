@@ -66,12 +66,12 @@ const orderRequestAdapter = shopifyOrder => {
         },
         shiping: {
             address: {
-                street: shopifyOrder.shipping_address.address1,
+                street: shopifyOrder.shipping_address?.address1,
                 number: 1,
-                city: shopifyOrder.shipping_address.city,
-                postalCode: shopifyOrder.shipping_address.zip
+                city: shopifyOrder.shipping_address?.city,
+                postalCode: shopifyOrder.shipping_address?.zip
             },
-            serviceCode: getServiceCode(products)
+            serviceCode: getServiceCode(shopifyOrder.line_items)
         },
         payment: {
             amount: shopifyOrder.current_total_price,
