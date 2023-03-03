@@ -76,9 +76,9 @@
                     <ns2:DocumentValue>
 					{{#specialItems}}
 					<ns2:Quick_Sales_Sub_Doc_Val_WS>
-						<ns2:Line_No{{genNumber}}</ns2:Line_No>
+						<ns2:Line_No>{{genNumber}}</ns2:Line_No>
 						<ns2:Entry_No>{{number}}</ns2:Entry_No>
-						<ns2:Identifier>{id}</ns2:Identifier>
+						<ns2:Identifier>{{id}}</ns2:Identifier>
 						<ns2:ValueText>{{description}}</ns2:ValueText> <!-- tbd with Rhodius when to be added -->
 					</ns2:Quick_Sales_Sub_Doc_Val_WS>
 					{{/specialItems}}

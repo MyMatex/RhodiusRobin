@@ -25,7 +25,7 @@ const getProductsFromLines = lines => {
 }
 const getSpecialItemsFromProducts = products => {
     return products.map(product => {
-        if(product.price === 0) {
+        if(parseFloat(product.price) === 0) {
             return {
                 genNumber: product.genNumber,
                 number: product.number,
@@ -33,7 +33,7 @@ const getSpecialItemsFromProducts = products => {
                 description: product.description
             }
         }
-    })
+    }).filter(item => item)
 }
 const getDepositItemsFromProducts = products => {
     return products.map((product, index) => {
@@ -45,14 +45,14 @@ const getDepositItemsFromProducts = products => {
                 id,
             }
         }
-    })
+    }).filter(item => item)
 }
 const getServiceCode = products => {
     const foundItem = products.find(product => {
         const serviceCode = product.sku.split('#')[2];
-        return serviceCode === 'VERIFYAGE';
+        return serviceCode === 'VERIFY';
     })
-    return foundItem ? 'VERIFYAGE' : 'STANDARD'
+    return foundItem ? 'VERIFY' : 'STANDARD'
 }
 const orderRequestAdapter = shopifyOrder => {
     const products = getProductsFromLines(shopifyOrder.line_items)
@@ -97,8 +97,8 @@ const orderRequestAdapter = shopifyOrder => {
             currency: shopifyOrder.currency 
         },
         products,
-        specialItems: specialItems[0] ? specialItems : [],
-        depositItems: depositItems[0] ? depositItems : []
+        specialItems: specialItems.length > 0 ? specialItems : [],
+        depositItems: depositItems.length > 0 ? depositItems : []
     }
 }
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -120,7 +120,7 @@ const createOrderRequest = orders => {
 
 const findProductBySku = (products, sku) => products.find(product => product.variants[0].sku.split('#')[0] === sku)
 
-app.get('/:status', async (req, res)=>{
+app.post('/:status', async (req, res)=>{
     try {
         const { status } = req.params
         const orders = await axios.get(
@@ -142,7 +142,7 @@ app.get('/test/:status', async (req, res)=>{
             `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/orders.json?status=${status}`
             )
         const xml = fs.readFileSync('request/createOrder.xml', 'utf-8');
-        const adaptedData = orderRequestAdapter(orders.data.orders[1])
+        const adaptedData = orderRequestAdapter(orders.data.orders[0])
         const output = Mustache.render(xml, adaptedData);
         res.send(output);
     } catch(e) {
