@@ -11,11 +11,10 @@ const PORT = 3000;
 const getProductsFromLines = lines => {
     return lines.map((line, i) => {
         const [id, deposit] = line.sku.split('#');
-        const number = deposit === 'DI' ? 'DEPOSITITEM' : id;
         return {
             sku: line.sku,
             genNumber: `${i + 1}0000`,
-            number,
+            number: id,
             description: line.title,
             quantity: line.quantity,
             price: line.price,
