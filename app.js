@@ -127,6 +127,7 @@ app.post('/:status', async (req, res)=>{
             )
         const orderRequests = createOrderRequest(orders.data.orders)
         const ordersResponse = await Promise.allSettled(orderRequests)
+        console.log(orderRequests)
         res.send(ordersResponse);
     } catch(e) {
         console.log(e)
