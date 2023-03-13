@@ -9,18 +9,50 @@ const app = express();
 const PORT = 3000;
 
 const getProductsFromLines = lines => {
-    return lines.map((line, i) => {
+    let cursor = 1;
+    const products = lines.map(line => {
         const [id, deposit] = line.sku.split('#');
-        return {
-            sku: line.sku,
-            genNumber: `${i + 1}0000`,
-            number: id,
-            description: line.title,
-            quantity: line.quantity,
-            price: line.price,
-            discount: line.total_discount
+        if(deposit === 'DI') {
+            const depositPrice = (12 * 0.25).toFixed(2)
+            const price = (line.price - depositPrice).toFixed(2)
+            const results = [
+                {
+                sku: line.sku,
+                genNumber: `${cursor}0000`,
+                number: id,
+                description: line.title,
+                quantity: line.quantity,
+                price,
+                discount: line.total_discount
+            },
+            {
+                sku: line.sku,
+                genNumber: `${cursor + 1}0000`,
+                number: 'DEPOSITITEM',
+                description: line.title,
+                quantity: line.quantity,
+                price: depositPrice,
+                discount: line.total_discount
+            }
+        ]
+            cursor+=2; 
+            return results;
+        } else {
+            const result = {
+                sku: line.sku,
+                genNumber: `${cursor}0000`,
+                number: id,
+                description: line.title,
+                quantity: line.quantity,
+                price: line.price,
+                discount: line.total_discount
+            } 
+            cursor += 1;
+            return result
         }
+
     })
+    return products.flat()
 }
 const getSpecialItemsFromProducts = products => {
     return products.map(product => {
@@ -35,7 +67,7 @@ const getSpecialItemsFromProducts = products => {
     }).filter(item => item)
 }
 const getDepositItemsFromProducts = products => {
-    return products.map((product, index) => {
+    const deposit = products.map((product, index) => {
         const [id, deposit] = product.sku.split('#')
         if(deposit === 'DI') {
             return {
@@ -44,7 +76,8 @@ const getDepositItemsFromProducts = products => {
                 id,
             }
         }
-    }).filter(item => item)
+    })
+    return deposit.filter((item,i) => deposit.findIndex((item2) => item?.id === item2?.id) === i).filter(depositItem => depositItem)
 }
 const getServiceCode = products => {
     const foundItem = products.find(product => {
@@ -57,6 +90,8 @@ const orderRequestAdapter = shopifyOrder => {
     const products = getProductsFromLines(shopifyOrder.line_items)
     const specialItems = getSpecialItemsFromProducts(products)
     const depositItems = getDepositItemsFromProducts(products)
+    const [methodCode, PSP] = shopifyOrder.gateway.split('-')
+    const PSPCode = PSP?.includes('Klarna') ? 'klarna' : 'CREDIT';
     return {
         config: {
             ip: process.env.FIEGE_SERVER_IP,
@@ -64,7 +99,7 @@ const orderRequestAdapter = shopifyOrder => {
             key: process.env.FIEGE_SERVER_KEY
         },
         order : {
-            id: shopifyOrder.id,
+            id: shopifyOrder.id + Date.now(),
             date: shopifyOrder.created_at.split('T')[0],
             time: shopifyOrder.created_at.split('T')[1],
         },
@@ -90,7 +125,7 @@ const orderRequestAdapter = shopifyOrder => {
             shipingAmount: shopifyOrder.total_shipping_price_set.shop_money.amount,
             isShipingFree: shopifyOrder.total_shipping_price_set.shop_money.amount === 0,
             methodCode: 'PP_MPAY',
-            PSP: 'PAYPAL',
+            PSP: PSPCode,
             id: shopifyOrder.checkout_id,
             transactionId: shopifyOrder.checkout_token,
             currency: shopifyOrder.currency 
@@ -123,7 +158,7 @@ app.post('/:status', async (req, res)=>{
     try {
         const { status } = req.params
         const orders = await axios.get(
-            `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/orders.json?status=${status}`
+            `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-04/orders.json?status=${status}`
             )
         const orderRequests = createOrderRequest(orders.data.orders)
         const ordersResponse = await Promise.allSettled(orderRequests)
@@ -135,14 +170,15 @@ app.post('/:status', async (req, res)=>{
     }
 
 });
-app.get('/test/:status', async (req, res)=>{
+app.get('/test/:status/:number', async (req, res)=>{
     try {
-        const { status } = req.params
+        const { status, number } = req.params
         const orders = await axios.get(
-            `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/orders.json?status=${status}`
+            `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-04/orders.json?status=${status}`
             )
         const xml = fs.readFileSync('request/createOrder.xml', 'utf-8');
-        const adaptedData = orderRequestAdapter(orders.data.orders[0])
+        const adaptedData = orderRequestAdapter(orders.data.orders[number])
+        console.log(adaptedData)
         const output = Mustache.render(xml, adaptedData);
         res.send(output);
     } catch(e) {
