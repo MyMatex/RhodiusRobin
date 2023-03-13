@@ -90,8 +90,12 @@ const orderRequestAdapter = shopifyOrder => {
     const products = getProductsFromLines(shopifyOrder.line_items)
     const specialItems = getSpecialItemsFromProducts(products)
     const depositItems = getDepositItemsFromProducts(products)
-    const [methodCode, PSP] = shopifyOrder.gateway.split('-')
-    const PSPCode = PSP?.includes('Klarna') ? 'klarna' : 'CREDIT';
+    const [PSP, method] = shopifyOrder.gateway.split('-')
+    const methodCode = method?.includes('Klarna') ? 'KL_MO_MPAY' : 'CC_MO_MPAY';
+    const cardDictionary = {
+        'Mastercard': 'MC',
+        'Visa': 'VI'
+    }
     return {
         config: {
             ip: process.env.FIEGE_SERVER_IP,
@@ -124,8 +128,8 @@ const orderRequestAdapter = shopifyOrder => {
             amount: shopifyOrder.current_total_price,
             shipingAmount: shopifyOrder.total_shipping_price_set.shop_money.amount,
             isShipingFree: shopifyOrder.total_shipping_price_set.shop_money.amount === 0,
-            methodCode: 'PP_MPAY',
-            PSP: PSPCode,
+            methodCode,
+            PSP: cardDictionary[shopifyOrder?.payment_details?.credit_card_company] || 'KLARNA',
             id: shopifyOrder.checkout_id,
             transactionId: shopifyOrder.checkout_token,
             currency: shopifyOrder.currency 
