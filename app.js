@@ -99,7 +99,7 @@ const orderRequestAdapter = shopifyOrder => {
             key: process.env.FIEGE_SERVER_KEY
         },
         order : {
-            id: shopifyOrder.id + Date.now(),
+            id: shopifyOrder.id,
             date: shopifyOrder.created_at.split('T')[0],
             time: shopifyOrder.created_at.split('T')[1],
         },
