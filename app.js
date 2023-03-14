@@ -94,7 +94,8 @@ const orderRequestAdapter = shopifyOrder => {
     const methodCode = method?.includes('Klarna') ? 'KL_MO_MPAY' : 'CC_MO_MPAY';
     const cardDictionary = {
         'Mastercard': 'MC',
-        'Visa': 'VI'
+        'Visa': 'VI',
+        undefined: 'MC'
     }
     return {
         config: {
@@ -129,7 +130,7 @@ const orderRequestAdapter = shopifyOrder => {
             shipingAmount: shopifyOrder.total_shipping_price_set.shop_money.amount,
             isShipingFree: shopifyOrder.total_shipping_price_set.shop_money.amount === 0,
             methodCode,
-            PSP: cardDictionary[shopifyOrder?.payment_details?.credit_card_company] || 'KLARNA',
+            PSP: methodCode === 'KL_MO_MPAY' ? 'KLARNA' : cardDictionary[shopifyOrder?.payment_details?.credit_card_company],
             id: shopifyOrder.checkout_id,
             transactionId: shopifyOrder.checkout_token,
             currency: shopifyOrder.currency 
@@ -182,7 +183,6 @@ app.get('/test/:status/:number', async (req, res)=>{
             )
         const xml = fs.readFileSync('request/createOrder.xml', 'utf-8');
         const adaptedData = orderRequestAdapter(orders.data.orders[number])
-        console.log(adaptedData)
         const output = Mustache.render(xml, adaptedData);
         res.send(output);
     } catch(e) {
