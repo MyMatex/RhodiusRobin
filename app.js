@@ -5,11 +5,10 @@ const soapRequest = require('easy-soap-request');
 const axios = require('axios');
 const { getGender } = require('gender-detection-from-name');
 const { createMollieClient } = require('@mollie/api-client');
-const mollieClient = createMollieClient({ apiKey: 'test_Gqhcmm8cQVJ3DhssDdxyu7qy7F5Fxg' })
 require('dotenv').config()
 const app = express();
 const PORT = 3000;
-
+const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_KEY })
 const getProductsFromLines = lines => {
     let cursor = 1;
     const products = lines.map(line => {
@@ -134,8 +133,8 @@ const orderRequestAdapter = (shopifyOrder, molliePayments) => {
             isShipingFree: shopifyOrder.total_shipping_price_set.shop_money.amount === 0,
             methodCode,
             PSP: methodCode === 'KL_MO_MPAY' ? 'KLARNA' : cardDictionary[shopifyOrder?.payment_details?.credit_card_company],
-            id: mollie.description,
-            transactionId: mollie.id,
+            id: mollie.id,
+            transactionId: mollie.description,
             currency: shopifyOrder.currency 
         },
         products,
