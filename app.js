@@ -4,6 +4,8 @@ const Mustache = require('mustache');
 const soapRequest = require('easy-soap-request');
 const axios = require('axios');
 const { getGender } = require('gender-detection-from-name');
+const { createMollieClient } = require('@mollie/api-client');
+const mollieClient = createMollieClient({ apiKey: 'test_Gqhcmm8cQVJ3DhssDdxyu7qy7F5Fxg' })
 require('dotenv').config()
 const app = express();
 const PORT = 3000;
@@ -86,12 +88,13 @@ const getServiceCode = products => {
     })
     return foundItem ? 'VERIFY' : 'STANDARD'
 }
-const orderRequestAdapter = shopifyOrder => {
+const orderRequestAdapter = (shopifyOrder, molliePayments) => {
     const products = getProductsFromLines(shopifyOrder.line_items)
     const specialItems = getSpecialItemsFromProducts(products)
     const depositItems = getDepositItemsFromProducts(products)
     const [PSP, method] = shopifyOrder?.gateway?.split('-')
     const methodCode = method?.includes('Klarna') ? 'KL_MO_MPAY' : 'CC_MO_MPAY';
+    const mollie = getMollie(molliePayments, shopifyOrder)
     const cardDictionary = {
         'Mastercard': 'MC',
         'Visa': 'VI',
@@ -131,8 +134,8 @@ const orderRequestAdapter = shopifyOrder => {
             isShipingFree: shopifyOrder.total_shipping_price_set.shop_money.amount === 0,
             methodCode,
             PSP: methodCode === 'KL_MO_MPAY' ? 'KLARNA' : cardDictionary[shopifyOrder?.payment_details?.credit_card_company],
-            id: shopifyOrder.checkout_id,
-            transactionId: shopifyOrder.checkout_token,
+            id: mollie.description,
+            transactionId: mollie.id,
             currency: shopifyOrder.currency 
         },
         products,
@@ -142,7 +145,7 @@ const orderRequestAdapter = shopifyOrder => {
 }
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-const createOrderRequest = orders => {
+const createOrderRequest = (orders, molliePayments) => {
     const url = process.env.FIEGE_ENDPOINT;
     const sampleHeaders = {
     'user-agent': 'sampleTest',
@@ -151,7 +154,7 @@ const createOrderRequest = orders => {
     return orders.map(async order => {
         await sleep(1000)
         const xml = fs.readFileSync('request/createOrder.xml', 'utf-8');
-        const adaptedData = orderRequestAdapter(order)
+        const adaptedData = orderRequestAdapter(order, molliePayments)
         const output = Mustache.render(xml, adaptedData);
         return soapRequest({ url: url, headers: sampleHeaders, xml: output, timeout: 200000 });
     })
@@ -159,13 +162,30 @@ const createOrderRequest = orders => {
 
 const findProductBySku = (products, sku) => products.find(product => product.variants[0].sku.split('#')[0] === sku)
 
+const getMollie = (molliePayments, order) => {
+    let id = '';
+    let description = '';
+    const cat = new Date(order.created_at).getTime();
+    for(let i = 0; i < molliePayments.length; i++) {
+        const molliePaymentTime = new Date(molliePayments[i].paidAt).getTime();
+        const difference = cat - molliePaymentTime;
+        if(difference > 0 && difference < 5000 && molliePayments[i].amount.value === order.current_total_price) {
+            id = molliePayments[i].id
+            description = molliePayments[i].description
+        }
+    }
+    return {id, description};
+}
+
 app.post('/:status', async (req, res)=>{
     try {
         const { status } = req.params
-        const orders = await axios.get(
+        const ordersPromise = axios.get(
             `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/orders.json?status=${status}`
             )
-        const orderRequests = createOrderRequest(orders.data.orders)
+        const molliePaymentsPromise = mollieClient.payments.page({ limit: 15 });
+        const [orders, molliePayments] = await Promise.all([ordersPromise, molliePaymentsPromise])
+        const orderRequests = createOrderRequest(orders.data.orders, molliePayments)
         const ordersResponse = await Promise.allSettled(orderRequests)
         console.log(JSON.stringify(ordersResponse))
         res.send(ordersResponse);
@@ -182,15 +202,15 @@ app.get('/test/:status/:number', async (req, res)=>{
             `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/orders.json?status=${status}`
             )
         const xml = fs.readFileSync('request/createOrder.xml', 'utf-8');
-        const adaptedData = orderRequestAdapter(orders.data.orders[number])
+        const molliePayments = await mollieClient.payments.page({ limit: 15 });
+        const adaptedData = orderRequestAdapter(orders.data.orders[number], molliePayments)
+
         const output = Mustache.render(xml, adaptedData);
-        console.log(adaptedData)
         res.send(output);
     } catch(e) {
         console.log(e)
         res.status(500).send(e.message)
     }
-
 });
 
 app.put('/test/update/:sku/:quantity', async (req, res)=>{
