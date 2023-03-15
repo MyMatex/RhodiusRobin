@@ -90,7 +90,7 @@ const orderRequestAdapter = shopifyOrder => {
     const products = getProductsFromLines(shopifyOrder.line_items)
     const specialItems = getSpecialItemsFromProducts(products)
     const depositItems = getDepositItemsFromProducts(products)
-    const [PSP, method] = shopifyOrder.gateway.split('-')
+    const [PSP, method] = shopifyOrder?.gateway?.split('-')
     const methodCode = method?.includes('Klarna') ? 'KL_MO_MPAY' : 'CC_MO_MPAY';
     const cardDictionary = {
         'Mastercard': 'MC',
@@ -163,7 +163,7 @@ app.post('/:status', async (req, res)=>{
     try {
         const { status } = req.params
         const orders = await axios.get(
-            `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-04/orders.json?status=${status}`
+            `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/orders.json?status=${status}`
             )
         const orderRequests = createOrderRequest(orders.data.orders)
         const ordersResponse = await Promise.allSettled(orderRequests)
@@ -179,11 +179,12 @@ app.get('/test/:status/:number', async (req, res)=>{
     try {
         const { status, number } = req.params
         const orders = await axios.get(
-            `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-04/orders.json?status=${status}`
+            `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/orders.json?status=${status}`
             )
         const xml = fs.readFileSync('request/createOrder.xml', 'utf-8');
         const adaptedData = orderRequestAdapter(orders.data.orders[number])
         const output = Mustache.render(xml, adaptedData);
+        console.log(adaptedData)
         res.send(output);
     } catch(e) {
         console.log(e)
