@@ -72,8 +72,8 @@ const getDepositItemsFromProducts = products => {
         const [id, deposit] = product.sku.split('#')
         if(deposit === 'DI') {
             return {
-                genNumber: product.genNumber,
-                number: index,
+                genNumber: parseInt(product.genNumber) + 10000,
+                number: index + 1,
                 id,
             }
         }
