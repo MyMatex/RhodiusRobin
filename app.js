@@ -30,7 +30,7 @@ const getProductsFromLines = lines => {
                 sku: line.sku,
                 genNumber: `${cursor + 1}0000`,
                 number: 'DEPOSITITEM',
-                description: line.title,
+                description: 'pfand',
                 quantity: line.quantity,
                 price: depositPrice,
                 discount: line.total_discount
@@ -168,7 +168,7 @@ const getMollie = (molliePayments, order) => {
     for(let i = 0; i < molliePayments.length; i++) {
         const molliePaymentTime = new Date(molliePayments[i].paidAt).getTime();
         const difference = cat - molliePaymentTime;
-        if(difference > 0 && difference < 5000 && molliePayments[i].amount.value === order.current_total_price) {
+        if(difference > 0 && difference < 8000 && molliePayments[i].amount.value === order.current_total_price) {
             id = molliePayments[i].id
             description = molliePayments[i].description
         }
