@@ -199,8 +199,9 @@ app.get('/dictionary/:status', async(req, res) => {
     const orders = await axios.get(
         `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/orders.json?status=${status}`
         )
-    const dictionary = orders.data.orders.map(order => `The orderId for ticket ${order.name} is ${order.id}`)
-    res.send(dictionary)
+    const dictionary = orders.data.orders.map(order => `<p>The orderId for ticket ${order.name} is ${order.id}</p>`)
+    res.set('Content-Type', 'text/html');
+    res.send(Buffer.from(dictionary.toString()));
 })
 app.get('/test/:status/:number', async (req, res)=>{
     try {
