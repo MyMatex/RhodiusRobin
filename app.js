@@ -194,8 +194,21 @@ app.post('/:status', async (req, res)=>{
     }
 
 });
+app.get('/dictionary/:status', async(req, res) => {
+    const { status } = req.params
+    const orders = await axios.get(
+        `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/orders.json?status=${status}`
+        )
+    const dictionary = orders.data.orders.map(order => ({id: order.id, shopifyId: order.name}))
+    res.send(dictionary)
+})
 app.get('/test/:status/:number', async (req, res)=>{
     try {
+        const url = process.env.FIEGE_ENDPOINT;
+        const sampleHeaders = {
+            'user-agent': 'sampleTest',
+            'Content-Type': 'text/xml;charset=UTF-8',
+            };
         const { status, number } = req.params
         const orders = await axios.get(
             `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/orders.json?status=${status}`
@@ -203,9 +216,9 @@ app.get('/test/:status/:number', async (req, res)=>{
         const xml = fs.readFileSync('request/createOrder.xml', 'utf-8');
         const molliePayments = await mollieClient.payments.page({ limit: 15 });
         const adaptedData = orderRequestAdapter(orders.data.orders[number], molliePayments)
-
         const output = Mustache.render(xml, adaptedData);
-        res.send(output);
+        const response = await soapRequest({ url, headers: sampleHeaders, xml: output, timeout: 200000 });
+        res.send(response);
     } catch(e) {
         console.log(e)
         res.status(500).send(e.message)
