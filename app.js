@@ -184,7 +184,7 @@ app.post('/:status', async (req, res)=>{
             )
         const molliePaymentsPromise = mollieClient.payments.page({ limit: 15 });
         const [orders, molliePayments] = await Promise.all([ordersPromise, molliePaymentsPromise])
-        const orderRequests = createOrderRequest(orders.data.orders, molliePayments)
+        const orderRequests = createOrderRequest(orders.data.orders.slice(0,9), molliePayments)
         const ordersResponse = await Promise.allSettled(orderRequests)
         console.log(JSON.stringify(ordersResponse))
         res.send(ordersResponse);
