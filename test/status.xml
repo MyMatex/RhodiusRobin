@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<OrderReplies>
+  <Datasource>TEST</Datasource>
+  <NumberOfOrderReplies>1</NumberOfOrderReplies>
+  <OrderReply>
+    <Header>
+      <OrderNo>RHO00014000</OrderNo>
+      <OrderStatus>CNCL</OrderStatus>
+      <StatsDateTime>2019-10-11</StatsDateTime>
+      <Country>DE</Country>
+      <ExchangeRate>1.0</ExchangeRate>
+      <PromotionMedium>RHODIUS.EU</PromotionMedium>
+    </Header>
+    <Items>
+      <Item>
+        <ItemNo>1</ItemNo>
+        <SAPOrderItemNo>1</SAPOrderItemNo>
+        <ItemQuantity>1</ItemQuantity>
+        <ItemStatus>CNCL</ItemStatus>
+        <ItemDateTime>20191011123453</ItemDateTime>
+        <ArticleNo>4058424350917</ArticleNo>
+        <ArticleDescription>Testartikel</ArticleDescription>
+        <ItemValue>59.99</ItemValue>
+        <ItemValueLCY>59.99</ItemValueLCY>
+        <ItemCurrency>EUR</ItemCurrency>
+      </Item>
+      <Item>
+        <ItemNo>2</ItemNo>
+        <SAPOrderItemNo>2</SAPOrderItemNo>
+        <ItemQuantity>1</ItemQuantity>
+        <ItemStatus>CNCL</ItemStatus>
+        <ItemDateTime>20191011123453</ItemDateTime>
+        <ArticleNo>4058424350918</ArticleNo>
+        <ArticleDescription>Testartikel 2</ArticleDescription>
+        <ItemValue>49.99</ItemValue>
+        <ItemValueLCY>49.99</ItemValueLCY>
+        <ItemCurrency>EUR</ItemCurrency>
+      </Item>
+      <Item>
+        <ItemNo>99</ItemNo>
+        <SAPOrderItemNo>99</SAPOrderItemNo>
+        <ItemQuantity>1</ItemQuantity>
+        <ItemStatus>CNCL</ItemStatus>
+        <ItemDateTime>20191011123453</ItemDateTime>
+        <ArticleNo>VSK</ArticleNo>
+        <ArticleDescription>Versandkosten</ArticleDescription>
+        <ItemValue>3.95</ItemValue>
+        <ItemValueLCY>3.95</ItemValueLCY>
+        <ItemCurrency>EUR</ItemCurrency>
+      </Item>
+    </Items>
+  </OrderReply>
+</OrderReplies>

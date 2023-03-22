@@ -1,11 +1,12 @@
 const express = require('express');
-const fs = require('fs');
+const fs = require('fs').promises;
 const Mustache = require('mustache');
 const soapRequest = require('easy-soap-request');
 const axios = require('axios');
 const { getGender } = require('gender-detection-from-name');
 const { createMollieClient } = require('@mollie/api-client');
 require('dotenv').config()
+const parseString = require('xml2js').parseString
 const app = express();
 const PORT = 3000;
 const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_KEY })
@@ -87,13 +88,14 @@ const getServiceCode = products => {
     })
     return foundItem ? 'VERIFY' : 'STANDARD'
 }
-const orderRequestAdapter = (shopifyOrder, molliePayments) => {
+const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
     const products = getProductsFromLines(shopifyOrder.line_items)
     const specialItems = getSpecialItemsFromProducts(products)
     const depositItems = getDepositItemsFromProducts(products)
     const [PSP, method] = shopifyOrder?.gateway?.split('-')
     const methodCode = method?.includes('Klarna') ? 'KL_MO_MPAY' : 'CC_MO_MPAY';
     const mollie = getMollie(molliePayments, shopifyOrder)
+    await mollieClient.payments.update(mollie.id, {metadata: { orderId: shopifyOrder.id }})
     const cardDictionary = {
         'Mastercard': 'MC',
         'Visa': 'VI',
@@ -153,7 +155,7 @@ const createOrderRequest = (orders, molliePayments) => {
     return orders.map(async order => {
         await sleep(1000)
         const xml = fs.readFileSync('request/createOrder.xml', 'utf-8');
-        const adaptedData = orderRequestAdapter(order, molliePayments)
+        const adaptedData = await orderRequestAdapter(order, molliePayments)
         const output = Mustache.render(xml, adaptedData);
         return soapRequest({ url: url, headers: sampleHeaders, xml: output, timeout: 200000 });
     })
@@ -170,7 +172,11 @@ const getMollie = (molliePayments, order) => {
         const difference = cat - molliePaymentTime;
         if(difference > 0 && difference < 8000 && molliePayments[i].amount.value === order.current_total_price) {
             id = molliePayments[i].id
-            description = molliePayments[i].description
+            if(molliePayments[i].orderId) {
+                description = molliePayments[i].orderId
+            } else {
+                description = molliePayments[i].description
+            }
         }
     }
     return {id, description};
@@ -214,19 +220,27 @@ app.get('/test/:status/:number', async (req, res)=>{
         const orders = await axios.get(
             `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/orders.json?status=${status}`
             )
-        const xml = fs.readFileSync('request/createOrder.xml', 'utf-8');
+        const xml = await fs.readFile('request/createOrder.xml', 'utf-8');
         const molliePayments = await mollieClient.payments.page({ limit: 15 });
-        const adaptedData = orderRequestAdapter(orders.data.orders[number], molliePayments)
+        const adaptedData = await orderRequestAdapter(orders.data.orders[number], molliePayments)
         const output = Mustache.render(xml, adaptedData);
-        const response = await soapRequest({ url, headers: sampleHeaders, xml: output, timeout: 200000 });
-        res.send(response);
+        //const response = await soapRequest({ url, headers: sampleHeaders, xml: output, timeout: 200000 });
+        res.send(output);
     } catch(e) {
         console.log(e)
         res.status(500).send(e.message)
     }
 });
 
-app.put('/test/update/:sku/:quantity', async (req, res)=>{
+app.put('/test/status/', async(req, res) => {
+    const xml = await fs.readFile('./test/status.xml');
+    //const data = convertXML(xml)
+    parseString(xml, function (err, result) {
+        res.send(result)
+    });
+})
+
+app.put('/test/inventory/:sku/:quantity', async (req, res)=>{
     try {
         const productsPromise = axios.get(
             `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2022-10/products.json`
