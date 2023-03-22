@@ -154,7 +154,7 @@ const createOrderRequest = (orders, molliePayments) => {
     };
     return orders.map(async order => {
         await sleep(1000)
-        const xml = fs.readFileSync('request/createOrder.xml', 'utf-8');
+        const xml = await fs.readFile('request/createOrder.xml', 'utf-8');
         const adaptedData = await orderRequestAdapter(order, molliePayments)
         const output = Mustache.render(xml, adaptedData);
         return soapRequest({ url: url, headers: sampleHeaders, xml: output, timeout: 200000 });
@@ -191,7 +191,7 @@ app.post('/:status', async (req, res)=>{
         const molliePaymentsPromise = mollieClient.payments.page({ limit: 15 });
         const [orders, molliePayments] = await Promise.all([ordersPromise, molliePaymentsPromise])
         const orderRequests = createOrderRequest(orders.data.orders.slice(0,9), molliePayments)
-        const ordersResponse = await Promise.allSettled(orderRequests)
+        const ordersResponse = await Promise.all(orderRequests)
         console.log(JSON.stringify(ordersResponse))
         res.send(ordersResponse);
     } catch(e) {
@@ -224,8 +224,8 @@ app.get('/test/:status/:number', async (req, res)=>{
         const molliePayments = await mollieClient.payments.page({ limit: 15 });
         const adaptedData = await orderRequestAdapter(orders.data.orders[number], molliePayments)
         const output = Mustache.render(xml, adaptedData);
-        //const response = await soapRequest({ url, headers: sampleHeaders, xml: output, timeout: 200000 });
-        res.send(output);
+        const response = await soapRequest({ url, headers: sampleHeaders, xml: output, timeout: 200000 });
+        res.send(response);
     } catch(e) {
         console.log(e)
         res.status(500).send(e.message)
@@ -233,10 +233,18 @@ app.get('/test/:status/:number', async (req, res)=>{
 });
 
 app.put('/test/status/', async(req, res) => {
+    const dict = {
+        'CNCL': 'close.json',
+        'CNFD': 'open.json'
+    }
     const xml = await fs.readFile('./test/status.xml');
-    //const data = convertXML(xml)
-    parseString(xml, function (err, result) {
-        res.send(result)
+    parseString(xml, async (err, result) => {
+        const orderId = result.OrderReplies.OrderReply[0].Header[0].OrderNo;
+        const status = result.OrderReplies.OrderReply[0].Header[0].OrderStatus
+        const updatedStatus = await axios.post(
+            `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-04/orders/${orderId}/${dict[status]}`
+        )
+        res.send(updatedStatus.data)
     });
 })
 
