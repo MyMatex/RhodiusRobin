@@ -69,9 +69,9 @@
 						<ns2:Quantity>{{quantity}}</ns2:Quantity>
 						<ns2:Unit_Price>{{price}}</ns2:Unit_Price>
 						<ns2:Item_used_as>Item</ns2:Item_used_as> <!-- fix -->
-						{{#if discount}}
+						{{#discount}}
 						<ns2:Line_Discount_Amount>{{discount}}</ns2:Line_Discount_Amount>
-						{{/if}}
+						{{/discount}}
 					</ns2:Quick_Sales_Subform_WebService>
 					{{/products}}
 				</ns2:QuickSalesLines>
