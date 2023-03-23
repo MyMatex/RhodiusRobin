@@ -33,8 +33,7 @@ const getProductsFromLines = lines => {
                 number: 'DEPOSITITEM',
                 description: 'pfand',
                 quantity: line.quantity,
-                price: depositPrice,
-                discount: line.discount_allocations[0].amount
+                price: depositPrice
             }
         ]
             cursor+=2; 
@@ -47,7 +46,6 @@ const getProductsFromLines = lines => {
                 description: line.title,
                 quantity: line.quantity,
                 price: line.price,
-                discount: line.total_discount
             } 
             cursor += 1;
             return result
