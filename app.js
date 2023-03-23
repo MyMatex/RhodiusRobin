@@ -224,8 +224,8 @@ app.get('/test/:status/:number', async (req, res)=>{
         const molliePayments = await mollieClient.payments.page({ limit: 15 });
         const adaptedData = await orderRequestAdapter(orders.data.orders[number], molliePayments)
         const output = Mustache.render(xml, adaptedData);
-        const response = await soapRequest({ url, headers: sampleHeaders, xml: output, timeout: 200000 });
-        res.send(response);
+        //const response = await soapRequest({ url, headers: sampleHeaders, xml: output, timeout: 200000 });
+        res.send(output);
     } catch(e) {
         console.log(e)
         res.status(500).send(e.message)
