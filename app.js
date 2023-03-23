@@ -95,7 +95,7 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
     const [PSP, method] = shopifyOrder?.gateway?.split('-')
     const methodCode = method?.includes('Klarna') ? 'KL_MO_MPAY' : 'CC_MO_MPAY';
     const mollie = getMollie(molliePayments, shopifyOrder)
-    await mollieClient.payments.update(mollie.id, {description: shopifyOrder.id, metadata: { orderId: shopifyOrder.id }})
+    await mollieClient.payments.update(mollie.id, {description: `order ${shopifyOrder.id}`, metadata: { orderId: shopifyOrder.id }})
     const cardDictionary = {
         'Mastercard': 'MC',
         'Visa': 'VI',
