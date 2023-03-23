@@ -189,7 +189,7 @@ app.post('/:status', async (req, res)=>{
         const molliePaymentsPromise = mollieClient.payments.page({ limit: 15 });
         const [orders, molliePayments] = await Promise.all([ordersPromise, molliePaymentsPromise])
         const orderRequests = createOrderRequest(orders.data.orders.slice(0,9), molliePayments)
-        const ordersResponse = await Promise.all(orderRequests)
+        const ordersResponse = await Promise.allSettled(orderRequests)
         console.log(JSON.stringify(ordersResponse))
         res.send(ordersResponse);
     } catch(e) {
@@ -222,8 +222,8 @@ app.get('/test/:status/:number', async (req, res)=>{
         const molliePayments = await mollieClient.payments.page({ limit: 15 });
         const adaptedData = await orderRequestAdapter(orders.data.orders[number], molliePayments)
         const output = Mustache.render(xml, adaptedData);
-        //const response = await soapRequest({ url, headers: sampleHeaders, xml: output, timeout: 200000 });
-        res.send(output);
+        const response = await soapRequest({ url, headers: sampleHeaders, xml: output, timeout: 200000 });
+        res.send(response);
     } catch(e) {
         console.log(e)
         res.status(500).send(e.message)
