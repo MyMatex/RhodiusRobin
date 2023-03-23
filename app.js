@@ -25,7 +25,7 @@ const getProductsFromLines = lines => {
                 description: line.title,
                 quantity: line.quantity,
                 price,
-                discount: line.discount_allocations[0].amount
+                discount: line?.discount_allocations[0]?.amount
             },
             {
                 sku: line.sku,
