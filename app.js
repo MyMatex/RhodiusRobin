@@ -25,7 +25,7 @@ const getProductsFromLines = lines => {
                 description: line.title,
                 quantity: line.quantity,
                 price,
-                discount: line.total_discount
+                discount: line.discount_allocations[0].amount
             },
             {
                 sku: line.sku,
@@ -34,7 +34,7 @@ const getProductsFromLines = lines => {
                 description: 'pfand',
                 quantity: line.quantity,
                 price: depositPrice,
-                discount: line.total_discount
+                discount: line.discount_allocations[0].amount
             }
         ]
             cursor+=2; 
