@@ -7,9 +7,11 @@ const { getGender } = require('gender-detection-from-name');
 const { createMollieClient } = require('@mollie/api-client');
 require('dotenv').config()
 const parseString = require('xml2js').parseString
+const paypal = require('paypal-node-sdk');
 const app = express();
 const PORT = 3000;
 const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_KEY })
+paypal.configure({ 'mode': process.env.PAYPAL_ENV, 'client_id': process.env.PAYPAL_ID, 'client_secret': process.env.PAYPAL_KEY});
 const getProductsFromLines = lines => {
     let cursor = 1;
     const products = lines.map(line => {
@@ -86,18 +88,42 @@ const getServiceCode = products => {
     })
     return foundItem ? 'VERIFY' : 'STANDARD'
 }
-const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
-    const products = getProductsFromLines(shopifyOrder.line_items)
-    const specialItems = getSpecialItemsFromProducts(products)
-    const depositItems = getDepositItemsFromProducts(products)
-    const [PSP, method] = shopifyOrder?.gateway?.split('-')
-    const methodCode = method?.includes('Klarna') ? 'KL_MO_MPAY' : 'CC_MO_MPAY';
-    const mollie = getMollie(molliePayments, shopifyOrder)
-    await mollieClient.payments.update(mollie.id, {description: `order ${shopifyOrder.id}`, metadata: { orderId: shopifyOrder.id }})
+const getMethodCode = method => {
+    if(method?.includes('Klarna')) {
+        return 'KL_MO_MPAY'
+    } else if(method?.includes('credit')) {
+        return 'CC_MO_MPAY'
+    } else {
+        return 'PP_MPAY'
+    }
+}
+
+const getPSP = (methodCode, creditCompany) => {
     const cardDictionary = {
         'Mastercard': 'MC',
         'Visa': 'VI',
         undefined: 'MC'
+    }
+    if(methodCode === 'KL_MO_MPAY') {
+        return 'KLARNA'
+    } else if(methodCode === 'CC_MO_MPAY') {
+        return cardDictionary[creditCompany]
+    } else {
+        return 'PAYPAL'
+    }
+}
+const orderRequestAdapter = async (shopifyOrder, molliePayments, paypalPayments) => {
+    let payment;
+    const products = getProductsFromLines(shopifyOrder.line_items)
+    const specialItems = getSpecialItemsFromProducts(products)
+    const depositItems = getDepositItemsFromProducts(products)
+    const [PSP, method] = shopifyOrder?.gateway?.split('-')
+    const methodCode = getMethodCode(method)
+    if(methodCode === 'KL_MO_MPAY' || methodCode === 'CC_MO_MPAY') {
+        payment = getMollie(molliePayments, shopifyOrder)
+        await mollieClient.payments.update(payment.id, {description: `${shopifyOrder.id}`, metadata: { orderId: shopifyOrder.id }})
+    } else {
+        payment = getPayPal(paypalPayments, shopifyOrder)
     }
     return {
         config: {
@@ -132,9 +158,9 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
             shipingAmount: shopifyOrder.total_shipping_price_set.shop_money.amount,
             isShipingFree: shopifyOrder.total_shipping_price_set.shop_money.amount === 0,
             methodCode,
-            PSP: methodCode === 'KL_MO_MPAY' ? 'KLARNA' : cardDictionary[shopifyOrder?.payment_details?.credit_card_company],
-            id: mollie.id,
-            transactionId: mollie.description,
+            PSP: getPSP(methodCode, shopifyOrder?.payment_details?.credit_card_company),
+            id: payment.id,
+            transactionId: payment.description,
             currency: shopifyOrder.currency 
         },
         products,
@@ -180,6 +206,21 @@ const getMollie = (molliePayments, order) => {
     return {id, description};
 }
 
+const getPayPal = (paypalPayments, order) => {
+    let id = '';
+    let description = '';
+    const cat = new Date(order.created_at).getTime();
+    for(let i = 0; i < paypalPayments.length; i++) {
+        const paypalPaymentTime = new Date(paypalPayments[i].create_time).getTime();
+        const difference = cat - paypalPaymentTime;
+        if(difference > 0 && difference < 8000 && paypalPayments[i].transactions[0].amount.total === order.current_total_price) {
+            id = paypalPayments[i].id
+            description = paypalPayments.cart
+        }
+    }
+    return {id, description};
+}
+
 app.post('/:status', async (req, res)=>{
     try {
         const { status } = req.params
@@ -215,34 +256,41 @@ app.get('/test/:status/:number', async (req, res)=>{
             'Content-Type': 'text/xml;charset=UTF-8',
             };
         const { status, number } = req.params
-        const orders = await axios.get(
+        const ordersPromise = axios.get(
             `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/orders.json?status=${status}`
             )
-        const xml = await fs.readFile('request/createOrder.xml', 'utf-8');
-        const molliePayments = await mollieClient.payments.page({ limit: 15 });
+        const xmlPromise = fs.readFile('request/createOrder.xml', 'utf-8');
+        const molliePaymentsPromise = mollieClient.payments.page({ limit: 15 });
+        const paypalPaymentsPromise = paypal.payment.list()
+        const [orders, xml, molliePayments, paypalPayments] = await Promise.all([ordersPromise, xmlPromise, molliePaymentsPromise, paypalPaymentsPromise]) 
         const adaptedData = await orderRequestAdapter(orders.data.orders[number], molliePayments)
         const output = Mustache.render(xml, adaptedData);
-        const response = await soapRequest({ url, headers: sampleHeaders, xml: output, timeout: 200000 });
-        res.send(response);
+        //const response = await soapRequest({ url, headers: sampleHeaders, xml: output, timeout: 200000 });
+        res.send(output);
     } catch(e) {
         console.log(e)
         res.status(500).send(e.message)
     }
 });
 
-app.put('/test/status/', async(req, res) => {
+app.put('/status', async(req, res) => {
     const dict = {
         'CNCL': 'close.json',
         'CNFD': 'open.json'
     }
     const xml = await fs.readFile('./test/status.xml');
     parseString(xml, async (err, result) => {
-        const orderId = result.OrderReplies.OrderReply[0].Header[0].OrderNo;
-        const status = result.OrderReplies.OrderReply[0].Header[0].OrderStatus
-        const updatedStatus = await axios.post(
-            `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-04/orders/${orderId}/${dict[status]}`
-        )
-        res.send(updatedStatus.data)
+        const responses = []
+        for(let i = 0; i < result.OrderReplies.OrderReply.length; i++) {
+            const orderId = result.OrderReplies.OrderReply[i].Header[0].OrderNo;
+            const status = result.OrderReplies.OrderReply[i].Header[0].OrderStatus
+            const updatedStatus = await axios.post(
+                `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-04/orders/${orderId}/${dict[status]}`
+            )
+            responses.push(updatedStatus.data)
+        }
+
+        res.send(responses)
     });
 })
 
