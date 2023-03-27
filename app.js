@@ -91,7 +91,7 @@ const getServiceCode = products => {
 const getMethodCode = method => {
     if(method?.includes('Klarna')) {
         return 'KL_MO_MPAY'
-    } else if(method?.includes('credit')) {
+    } else if(method?.includes('Credit')) {
         return 'CC_MO_MPAY'
     } else {
         return 'PP_MPAY'
@@ -118,6 +118,7 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments, paypalPayments)
     const specialItems = getSpecialItemsFromProducts(products)
     const depositItems = getDepositItemsFromProducts(products)
     const [PSP, method] = shopifyOrder?.gateway?.split('-')
+    console.log(shopifyOrder.gateway)
     const methodCode = getMethodCode(method)
     if(methodCode === 'KL_MO_MPAY' || methodCode === 'CC_MO_MPAY') {
         payment = getMollie(molliePayments, shopifyOrder)
@@ -263,7 +264,8 @@ app.get('/test/:status/:number', async (req, res)=>{
         const molliePaymentsPromise = mollieClient.payments.page({ limit: 15 });
         const paypalPaymentsPromise = paypal.payment.list()
         const [orders, xml, molliePayments, paypalPayments] = await Promise.all([ordersPromise, xmlPromise, molliePaymentsPromise, paypalPaymentsPromise]) 
-        const adaptedData = await orderRequestAdapter(orders.data.orders[number], molliePayments)
+        console.log(paypalPayments)
+        const adaptedData = await orderRequestAdapter(orders.data.orders[number], molliePayments, paypalPayments)
         const output = Mustache.render(xml, adaptedData);
         //const response = await soapRequest({ url, headers: sampleHeaders, xml: output, timeout: 200000 });
         res.send(output);
