@@ -118,7 +118,6 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments, paypalPayments)
     const specialItems = getSpecialItemsFromProducts(products)
     const depositItems = getDepositItemsFromProducts(products)
     const [PSP, method] = shopifyOrder?.gateway?.split('-')
-    console.log(shopifyOrder.gateway)
     const methodCode = getMethodCode(method)
     if(methodCode === 'KL_MO_MPAY' || methodCode === 'CC_MO_MPAY') {
         payment = getMollie(molliePayments, shopifyOrder)
@@ -264,7 +263,6 @@ app.get('/test/:status/:number', async (req, res)=>{
         const molliePaymentsPromise = mollieClient.payments.page({ limit: 15 });
         const paypalPaymentsPromise = paypal.payment.list()
         const [orders, xml, molliePayments, paypalPayments] = await Promise.all([ordersPromise, xmlPromise, molliePaymentsPromise, paypalPaymentsPromise]) 
-        console.log(paypalPayments)
         const adaptedData = await orderRequestAdapter(orders.data.orders[number], molliePayments, paypalPayments)
         const output = Mustache.render(xml, adaptedData);
         //const response = await soapRequest({ url, headers: sampleHeaders, xml: output, timeout: 200000 });
@@ -277,10 +275,11 @@ app.get('/test/:status/:number', async (req, res)=>{
 
 app.put('/status', async(req, res) => {
     const dict = {
-        'CNCL': 'close.json',
+        'COMP': 'close.json',
+        'CNCL': 'cancel.json',
         'CNFD': 'open.json'
     }
-    const xml = await fs.readFile('./test/status.xml');
+    const xml = await fs.readFile('./request/status.xml');
     parseString(xml, async (err, result) => {
         const responses = []
         for(let i = 0; i < result.OrderReplies.OrderReply.length; i++) {
