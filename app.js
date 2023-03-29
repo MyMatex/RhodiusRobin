@@ -338,25 +338,28 @@ app.post('/status/update', async(req, res) => {
             'CNFD': 'open.json'
         }
         for(let i = 0; i < list.length; i++) {
-            if(!list[i].name.includes('FULL_STOCK') || !list[i].name.includes('E')) {
+            if(!list[i].name.includes('FULL_STOCK') && !list[i].name.includes('E')) {
                 const remoteFilePath = '/OUT/' + list[i].name;
                 const stream = await sftp.get(remoteFilePath)
                 const result = await parser.parseStringPromise(stream)
-                const orderId = result.OrderReplies.OrderReply[0].Header[0].OrderNo;
-                const status = result.OrderReplies.OrderReply[0].Header[0].OrderStatus;
-                const configTransaction = {
-                    method: 'post',
-                    maxBodyLength: Infinity,
-                    url: `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-04/orders/${orderId}/${dict[status]}`,
-                };
-                const request = axios.request(configTransaction)
-                responses.push(request)
+                const orderId = result.OrderReplies.OrderReply[0].Header[0].OrderNo[0];
+                const status = result.OrderReplies.OrderReply[0].Header[0].OrderStatus[0];
+                if(!orderId.includes('RHODIUS')) {
+                    const configTransaction = {
+                        method: 'post',
+                        maxBodyLength: Infinity,
+                        url: `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-04/orders/${orderId}/${dict[status]}`,
+                    };
+                    const request = axios.request(configTransaction)
+                    responses.push(request)
+                }
             }
         }
         await Promise.allSettled(responses)
         res.send({status: 'ok'})
     } catch(e) {
-        res.send(e)
+        console.log(e)
+        res.send({error: 'aspojfios'})
     }
 })
 
