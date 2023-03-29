@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ExItemAvailQtyList xsi:noNamespaceSchemaLocation="ExItemAvailQty.xsd" CompanyName="Rhodius" TestMode="1" MessageDateTime="2023-03-28T01:00:00" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Item>
+    <ItemNo>123456789</ItemNo>
+    <AvailableQuantity>69</AvailableQuantity>
+    <UnitOfMeasure>STK</UnitOfMeasure>
+  </Item>
+  <Item>
+    <ItemNo>760153</ItemNo>
+    <AvailableQuantity>57</AvailableQuantity>
+    <UnitOfMeasure>STK</UnitOfMeasure>
+  </Item>
+  <Item>
+    <ItemNo>760154</ItemNo>
+    <AvailableQuantity>67</AvailableQuantity>
+    <UnitOfMeasure>STK</UnitOfMeasure>
+  </Item>
+  <Item>
+    <ItemNo>760155</ItemNo>
+    <AvailableQuantity>240</AvailableQuantity>
+    <UnitOfMeasure>STK</UnitOfMeasure>
+  </Item>
+  <Item>
+    <ItemNo>DEPOSITITEM</ItemNo>
+    <AvailableQuantity>387</AvailableQuantity>
+    <UnitOfMeasure>STK</UnitOfMeasure>
+  </Item>
+</ExItemAvailQtyList>

@@ -3,15 +3,14 @@ const fs = require('fs').promises;
 const Mustache = require('mustache');
 const soapRequest = require('easy-soap-request');
 const axios = require('axios');
+const qs = require('qs');
 const { getGender } = require('gender-detection-from-name');
 const { createMollieClient } = require('@mollie/api-client');
 require('dotenv').config()
 const parseString = require('xml2js').parseString
-const paypal = require('paypal-node-sdk');
 const app = express();
 const PORT = 3000;
 const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_KEY })
-paypal.configure({ 'mode': process.env.PAYPAL_ENV, 'client_id': process.env.PAYPAL_ID, 'client_secret': process.env.PAYPAL_KEY});
 const getProductsFromLines = lines => {
     let cursor = 1;
     const products = lines.map(line => {
@@ -170,7 +169,7 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments, paypalPayments)
 }
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-const createOrderRequest = (orders, molliePayments) => {
+const createOrderRequest = (orders, molliePayments, paypalPayments) => {
     const url = process.env.FIEGE_ENDPOINT;
     const sampleHeaders = {
     'user-agent': 'sampleTest',
@@ -179,7 +178,7 @@ const createOrderRequest = (orders, molliePayments) => {
     return orders.map(async order => {
         await sleep(1000)
         const xml = await fs.readFile('request/createOrder.xml', 'utf-8');
-        const adaptedData = await orderRequestAdapter(order, molliePayments)
+        const adaptedData = await orderRequestAdapter(order, molliePayments, paypalPayments)
         const output = Mustache.render(xml, adaptedData);
         return soapRequest({ url: url, headers: sampleHeaders, xml: output, timeout: 200000 });
     })
@@ -206,16 +205,55 @@ const getMollie = (molliePayments, order) => {
     return {id, description};
 }
 
+const paypalTransactions = async () => {
+    const data = qs.stringify({
+        'grant_type': 'client_credentials',
+        'ignoreCache': 'true',
+        'return_authn_schemes': 'true',
+        'return_client_metadata': 'true',
+        'return_unconsented_scopes': 'true' 
+      });
+      
+      const config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: 'https://api-m.paypal.com/v1/oauth2/token',
+        headers: { 
+          'Authorization': `Basic ${process.env.PAYPAL_AUTH}`, 
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        data : data
+      };
+      
+      const token = await axios.request(config)
+      const today = new Date()
+      const yesterday = new Date(today)
+      yesterday.setDate(yesterday.getDate() - 1)
+        let configTransaction = {
+            method: 'get',
+            maxBodyLength: Infinity,
+            url: `https://api-m.paypal.com/v1/reporting/transactions?fields=transaction_info,payer_info,shipping_info,auction_info,cart_info,incentive_info,store_info&start_date=${yesterday.toISOString()}&end_date=${today.toISOString()}`,
+            headers: { 
+              'Authorization': `Bearer ${token.data.access_token}`, 
+              'Cookie': 'l7_az=ccg14.slc'
+            }
+          };
+        const transactions = await axios.request(configTransaction)
+        return transactions.data
+}
+
 const getPayPal = (paypalPayments, order) => {
     let id = '';
     let description = '';
     const cat = new Date(order.created_at).getTime();
-    for(let i = 0; i < paypalPayments.length; i++) {
-        const paypalPaymentTime = new Date(paypalPayments[i].create_time).getTime();
+    for(let i = 0; i < paypalPayments.transaction_details.length; i++) {
+        const paypalPaymentTime = 
+            new Date(paypalPayments.transaction_details[i].transaction_info.transaction_initiation_date).getTime();
         const difference = cat - paypalPaymentTime;
-        if(difference > 0 && difference < 8000 && paypalPayments[i].transactions[0].amount.total === order.current_total_price) {
-            id = paypalPayments[i].id
-            description = paypalPayments.cart
+        const paypalPrice = paypalPayments.transaction_details[0].transaction_info.transaction_amount.value
+        if(difference > 0 && difference < 8000 && paypalPrice === order.current_total_price) {
+            id = paypalPayments.transaction_details[i].transaction_info.transaction_id
+            description = paypalPayments.transaction_details[i].transaction_info.paypal_account_id
         }
     }
     return {id, description};
@@ -228,8 +266,9 @@ app.post('/:status', async (req, res)=>{
             `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/orders.json?status=${status}`
             )
         const molliePaymentsPromise = mollieClient.payments.page({ limit: 15 });
-        const [orders, molliePayments] = await Promise.all([ordersPromise, molliePaymentsPromise])
-        const orderRequests = createOrderRequest(orders.data.orders.slice(0,9), molliePayments)
+        const paypalPaymentsPromise = paypalTransactions()
+        const [orders, molliePayments, paypalPayments] = await Promise.all([ordersPromise, molliePaymentsPromise, paypalPaymentsPromise])
+        const orderRequests = createOrderRequest(orders.data.orders.slice(0,9), molliePayments, paypalPayments)
         const ordersResponse = await Promise.allSettled(orderRequests)
         console.log(JSON.stringify(ordersResponse))
         res.send(ordersResponse);
@@ -261,7 +300,7 @@ app.get('/test/:status/:number', async (req, res)=>{
             )
         const xmlPromise = fs.readFile('request/createOrder.xml', 'utf-8');
         const molliePaymentsPromise = mollieClient.payments.page({ limit: 15 });
-        const paypalPaymentsPromise = paypal.payment.list()
+        const paypalPaymentsPromise = paypalTransactions()
         const [orders, xml, molliePayments, paypalPayments] = await Promise.all([ordersPromise, xmlPromise, molliePaymentsPromise, paypalPaymentsPromise]) 
         const adaptedData = await orderRequestAdapter(orders.data.orders[number], molliePayments, paypalPayments)
         const output = Mustache.render(xml, adaptedData);
@@ -279,23 +318,23 @@ app.put('/status', async(req, res) => {
         'CNCL': 'cancel.json',
         'CNFD': 'open.json'
     }
-    const xml = await fs.readFile('./request/status.xml');
-    parseString(xml, async (err, result) => {
-        const responses = []
-        for(let i = 0; i < result.OrderReplies.OrderReply.length; i++) {
-            const orderId = result.OrderReplies.OrderReply[i].Header[0].OrderNo;
-            const status = result.OrderReplies.OrderReply[i].Header[0].OrderStatus
+    const responses = []
+    const files = await fs.readdir('./request/status');
+    for(let i = 0; i < files.length; i++) {
+        const xml = await fs.readFile(`./request/status/${files[i]}`);
+        parseString(xml, async (err, result) => {
+            const orderId = result.OrderReplies.OrderReply[0].Header[0].OrderNo;
+            const status = result.OrderReplies.OrderReply[0].Header[0].OrderStatus
             const updatedStatus = await axios.post(
                 `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-04/orders/${orderId}/${dict[status]}`
             )
             responses.push(updatedStatus.data)
-        }
-
-        res.send(responses)
-    });
+        });
+    }
+    res.send(responses)
 })
 
-app.put('/test/inventory/:sku/:quantity', async (req, res)=>{
+app.put('/inventory', async (req, res)=>{
     try {
         const productsPromise = axios.get(
             `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2022-10/products.json`
@@ -304,18 +343,26 @@ app.put('/test/inventory/:sku/:quantity', async (req, res)=>{
             `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/locations.json`
             )
         const [products, locations] = await Promise.all([productsPromise, locationsPromise])
-        const product = findProductBySku(products.data.products, req.params.sku)
-        const location = locations.data.locations[0]
-        const payload = {
-            "location_id":location.id,
-            "inventory_item_id":product.variants[0].inventory_item_id,
-            "available":req.params.quantity
-        };
-        const inventory = await axios.post(
-            `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/inventory_levels/set.json`, 
-            payload
-            );
-        res.send(inventory.data);
+        const xml = await fs.readFile(`./request/FULL_STOCK_20230328030000.xml`);
+        const inventoryCalls =[]
+        parseString(xml, (err, result) => {
+            for(let i = 0; i < result.ExItemAvailQtyList.Item.length; i++) {
+                const product = findProductBySku(products.data.products, result.ExItemAvailQtyList.Item[i].ItemNo[0])
+                const location = locations.data.locations[0]
+                const payload = {
+                    "location_id":location.id,
+                    "inventory_item_id":product?.variants[0]?.inventory_item_id,
+                    "available":result.ExItemAvailQtyList.Item[i].AvailableQuantity[0]
+                };
+                const responsePromise = axios.post(
+                    `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/inventory_levels/set.json`, 
+                    payload
+                    );
+                inventoryCalls.push(responsePromise)
+            }
+        });
+        await Promise.allSettled(inventoryCalls)
+        res.send({status: 'ok'})
     } catch(e) {
         console.log(e)
         res.status(500).send(e.message)

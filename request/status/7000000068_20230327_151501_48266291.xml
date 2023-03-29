@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<OrderReplies>
+  <Datasource>TEST</Datasource>
+  <NumberOfOrderReplies>1</NumberOfOrderReplies>
+  <OrderReply>
+    <Header>
+      <OrderNo>5295065137434</OrderNo>
+      <OrderStatus>COMP</OrderStatus>
+      <StatsDateTime>2023-03-27</StatsDateTime>
+      <Country>DE</Country>
+      <ExchangeRate>1.0</ExchangeRate>
+      <PromotionMedium>RHODIUS.DE</PromotionMedium>
+      <AttachmentList>
+        <Attachment />
+      </AttachmentList>
+    </Header>
+    <Items>
+      <Item>
+        <ItemNo>1</ItemNo>
+        <SAPOrderItemNo>1</SAPOrderItemNo>
+        <ItemQuantity>1.0</ItemQuantity>
+        <ItemStatus>COMP</ItemStatus>
+        <ItemDateTime>20230327151501</ItemDateTime>
+        <ArticleNo>760154</ArticleNo>
+        <ArticleDescription>Robin Schulz x MY MATE + Secco (12er Karton)</ArticleDescription>
+        <ItemValue>16.99</ItemValue>
+        <ItemValueLCY>16.99</ItemValueLCY>
+        <ItemCurrency>EUR</ItemCurrency>
+      </Item>
+      <Item>
+        <ItemNo>2</ItemNo>
+        <SAPOrderItemNo>2</SAPOrderItemNo>
+        <ItemQuantity>1.0</ItemQuantity>
+        <ItemStatus>COMP</ItemStatus>
+        <ItemDateTime>20230327151501</ItemDateTime>
+        <ArticleNo>DEPOSITITEM</ArticleNo>
+        <ArticleDescription>pfand</ArticleDescription>
+        <ItemValue>3.0</ItemValue>
+        <ItemValueLCY>3.0</ItemValueLCY>
+        <ItemCurrency>EUR</ItemCurrency>
+      </Item>
+      <Item>
+        <ItemNo>3</ItemNo>
+        <SAPOrderItemNo>3</SAPOrderItemNo>
+        <ItemQuantity>1.0</ItemQuantity>
+        <ItemStatus>COMP</ItemStatus>
+        <ItemDateTime>20230327151501</ItemDateTime>
+        <ArticleNo>800104</ArticleNo>
+        <ArticleDescription>Versandkosten</ArticleDescription>
+        <ItemValue>4.99</ItemValue>
+        <ItemValueLCY>4.99</ItemValueLCY>
+        <ItemCurrency>EUR</ItemCurrency>
+      </Item>
+    </Items>
+    <Deliveries>
+      <Delivery>
+        <DeliveryNo>L0000069</DeliveryNo>
+        <Carrier>DHL</Carrier>
+        <Packages>
+          <Package>
+            <Identcode />
+            <TrackLink />
+            <PackItems>
+              <PackItem>
+                <OrderItemNo>1</OrderItemNo>
+                <DeliveryItemNumber>10000</DeliveryItemNumber>
+                <ArticleNo>760154</ArticleNo>
+                <ArticleDescription>Robin Schulz x MY MATE + Secco (12er Karton)</ArticleDescription>
+                <Quantity>1</Quantity>
+                <BarcodeNo>760154</BarcodeNo>
+              </PackItem>
+            </PackItems>
+          </Package>
+        </Packages>
+      </Delivery>
+    </Deliveries>
+  </OrderReply>
+</OrderReplies>

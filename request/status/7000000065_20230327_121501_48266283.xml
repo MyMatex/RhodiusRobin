@@ -4,9 +4,9 @@
   <NumberOfOrderReplies>1</NumberOfOrderReplies>
   <OrderReply>
     <Header>
-      <OrderNo>5293286359322</OrderNo>
+      <OrderNo>5295063138586</OrderNo>
       <OrderStatus>COMP</OrderStatus>
-      <StatsDateTime>2023-03-24</StatsDateTime>
+      <StatsDateTime>2023-03-27</StatsDateTime>
       <Country>DE</Country>
       <ExchangeRate>1.0</ExchangeRate>
       <PromotionMedium>RHODIUS.DE</PromotionMedium>
@@ -18,31 +18,43 @@
       <Item>
         <ItemNo>1</ItemNo>
         <SAPOrderItemNo>1</SAPOrderItemNo>
-        <ItemQuantity>5.0</ItemQuantity>
+        <ItemQuantity>1.0</ItemQuantity>
         <ItemStatus>COMP</ItemStatus>
-        <ItemDateTime>20230324091500</ItemDateTime>
-        <ArticleNo>760153</ArticleNo>
-        <ArticleDescription>Robin Schulz x MY MATE (12er Karton)</ArticleDescription>
-        <ItemValue>49.95</ItemValue>
-        <ItemValueLCY>49.95</ItemValueLCY>
+        <ItemDateTime>20230327121501</ItemDateTime>
+        <ArticleNo>760155</ArticleNo>
+        <ArticleDescription>Robin Schulz x MY MATE + Vodka (12er Karton)</ArticleDescription>
+        <ItemValue>26.99</ItemValue>
+        <ItemValueLCY>26.99</ItemValueLCY>
         <ItemCurrency>EUR</ItemCurrency>
       </Item>
       <Item>
         <ItemNo>2</ItemNo>
         <SAPOrderItemNo>2</SAPOrderItemNo>
-        <ItemQuantity>5.0</ItemQuantity>
+        <ItemQuantity>1.0</ItemQuantity>
         <ItemStatus>COMP</ItemStatus>
-        <ItemDateTime>20230324091500</ItemDateTime>
+        <ItemDateTime>20230327121501</ItemDateTime>
         <ArticleNo>DEPOSITITEM</ArticleNo>
         <ArticleDescription>pfand</ArticleDescription>
-        <ItemValue>15.0</ItemValue>
-        <ItemValueLCY>15.0</ItemValueLCY>
+        <ItemValue>3.0</ItemValue>
+        <ItemValueLCY>3.0</ItemValueLCY>
+        <ItemCurrency>EUR</ItemCurrency>
+      </Item>
+      <Item>
+        <ItemNo>3</ItemNo>
+        <SAPOrderItemNo>3</SAPOrderItemNo>
+        <ItemQuantity>1.0</ItemQuantity>
+        <ItemStatus>COMP</ItemStatus>
+        <ItemDateTime>20230327121501</ItemDateTime>
+        <ArticleNo>800104</ArticleNo>
+        <ArticleDescription>Versandkosten</ArticleDescription>
+        <ItemValue>4.99</ItemValue>
+        <ItemValueLCY>4.99</ItemValueLCY>
         <ItemCurrency>EUR</ItemCurrency>
       </Item>
     </Items>
     <Deliveries>
       <Delivery>
-        <DeliveryNo>L0000061</DeliveryNo>
+        <DeliveryNo>L0000066</DeliveryNo>
         <Carrier>DHL</Carrier>
         <Packages>
           <Package>
@@ -52,18 +64,10 @@
               <PackItem>
                 <OrderItemNo>1</OrderItemNo>
                 <DeliveryItemNumber>10000</DeliveryItemNumber>
-                <ArticleNo>760153</ArticleNo>
-                <ArticleDescription>Robin Schulz x MY MATE (12er Karton)</ArticleDescription>
-                <Quantity>5</Quantity>
-                <BarcodeNo>760153</BarcodeNo>
-              </PackItem>
-              <PackItem>
-                <OrderItemNo>2</OrderItemNo>
-                <DeliveryItemNumber>20000</DeliveryItemNumber>
-                <ArticleNo>DEPOSITITEM</ArticleNo>
-                <ArticleDescription>pfand</ArticleDescription>
-                <Quantity>5</Quantity>
-                <BarcodeNo>DEPOSITITEM</BarcodeNo>
+                <ArticleNo>760155</ArticleNo>
+                <ArticleDescription>Robin Schulz x MY MATE + Vodka (12er Karton)</ArticleDescription>
+                <Quantity>1</Quantity>
+                <BarcodeNo>760155</BarcodeNo>
               </PackItem>
             </PackItems>
           </Package>

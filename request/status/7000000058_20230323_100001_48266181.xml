@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<OrderReplies>
+  <Datasource>TEST</Datasource>
+  <NumberOfOrderReplies>1</NumberOfOrderReplies>
+  <OrderReply>
+    <Header>
+      <OrderNo>5289036874010</OrderNo>
+      <OrderStatus>COMP</OrderStatus>
+      <StatsDateTime>2023-03-23</StatsDateTime>
+      <Country>DE</Country>
+      <ExchangeRate>1.0</ExchangeRate>
+      <PromotionMedium>RHODIUS.DE</PromotionMedium>
+      <AttachmentList>
+        <Attachment />
+      </AttachmentList>
+    </Header>
+    <Items>
+      <Item>
+        <ItemNo>1</ItemNo>
+        <SAPOrderItemNo>1</SAPOrderItemNo>
+        <ItemQuantity>3.0</ItemQuantity>
+        <ItemStatus>COMP</ItemStatus>
+        <ItemDateTime>20230323100001</ItemDateTime>
+        <ArticleNo>760154</ArticleNo>
+        <ArticleDescription>Robin Schulz x MY MATE + Secco (12er Karton)</ArticleDescription>
+        <ItemValue>50.97</ItemValue>
+        <ItemValueLCY>50.97</ItemValueLCY>
+        <ItemCurrency>EUR</ItemCurrency>
+      </Item>
+      <Item>
+        <ItemNo>2</ItemNo>
+        <SAPOrderItemNo>2</SAPOrderItemNo>
+        <ItemQuantity>3.0</ItemQuantity>
+        <ItemStatus>COMP</ItemStatus>
+        <ItemDateTime>20230323100001</ItemDateTime>
+        <ArticleNo>DEPOSITITEM</ArticleNo>
+        <ArticleDescription>pfand</ArticleDescription>
+        <ItemValue>9.0</ItemValue>
+        <ItemValueLCY>9.0</ItemValueLCY>
+        <ItemCurrency>EUR</ItemCurrency>
+      </Item>
+      <Item>
+        <ItemNo>3</ItemNo>
+        <SAPOrderItemNo>3</SAPOrderItemNo>
+        <ItemQuantity>3.0</ItemQuantity>
+        <ItemStatus>COMP</ItemStatus>
+        <ItemDateTime>20230323100001</ItemDateTime>
+        <ArticleNo>760155</ArticleNo>
+        <ArticleDescription>Robin Schulz x MY MATE + Vodka (12er Karton)</ArticleDescription>
+        <ItemValue>80.97</ItemValue>
+        <ItemValueLCY>80.97</ItemValueLCY>
+        <ItemCurrency>EUR</ItemCurrency>
+      </Item>
+      <Item>
+        <ItemNo>4</ItemNo>
+        <SAPOrderItemNo>4</SAPOrderItemNo>
+        <ItemQuantity>3.0</ItemQuantity>
+        <ItemStatus>COMP</ItemStatus>
+        <ItemDateTime>20230323100001</ItemDateTime>
+        <ArticleNo>DEPOSITITEM</ArticleNo>
+        <ArticleDescription>pfand</ArticleDescription>
+        <ItemValue>9.0</ItemValue>
+        <ItemValueLCY>9.0</ItemValueLCY>
+        <ItemCurrency>EUR</ItemCurrency>
+      </Item>
+    </Items>
+    <Deliveries>
+      <Delivery>
+        <DeliveryNo>L0000059</DeliveryNo>
+        <Carrier>DHL</Carrier>
+        <Packages>
+          <Package>
+            <Identcode />
+            <TrackLink />
+            <PackItems>
+              <PackItem>
+                <OrderItemNo>1</OrderItemNo>
+                <DeliveryItemNumber>10000</DeliveryItemNumber>
+                <ArticleNo>760154</ArticleNo>
+                <ArticleDescription>Robin Schulz x MY MATE + Secco (12er Karton)</ArticleDescription>
+                <Quantity>3</Quantity>
+                <BarcodeNo>760154</BarcodeNo>
+              </PackItem>
+              <PackItem>
+                <OrderItemNo>3</OrderItemNo>
+                <DeliveryItemNumber>30000</DeliveryItemNumber>
+                <ArticleNo>760155</ArticleNo>
+                <ArticleDescription>Robin Schulz x MY MATE + Vodka (12er Karton)</ArticleDescription>
+                <Quantity>3</Quantity>
+                <BarcodeNo>760155</BarcodeNo>
+              </PackItem>
+            </PackItems>
+          </Package>
+        </Packages>
+      </Delivery>
+    </Deliveries>
+  </OrderReply>
+</OrderReplies>
