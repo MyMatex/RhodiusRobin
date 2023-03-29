@@ -329,41 +329,34 @@ app.get('/test/:status/:number', async (req, res)=>{
 });
 
 app.put('/status', async(req, res) => {
-    const list = await sftp.list('/OUT');
-    for(let i = 0; i < list.length; i++) {
-        if(!list[i].name.includes('FULL_STOCK')) {
-            const remoteFilePath = '/OUT/' + list[i].name;
-            const stream = await sftp.get(remoteFilePath)
-            let file = './request/status/' + list[i].name;
-            fs.writeFile(file, stream, (err) => {
-                if (err) console.log(err);
-            });
+    try {
+        const list = await sftp.list('/OUT');
+        const dict = {
+            'COMP': 'close.json',
+            'CNCL': 'cancel.json',
+            'CNFD': 'open.json'
         }
+        const responses = []
+        for(let i = 0; i < list.length; i++) {
+            if(!list[i].name.includes('FULL_STOCK')) {
+                const remoteFilePath = '/OUT/' + list[i].name;
+                const stream = await sftp.get(remoteFilePath)
+                parseString(stream, (err, result) => {
+                    const orderId = result.OrderReplies.OrderReply[0].Header[0].OrderNo;
+                    const status = result.OrderReplies.OrderReply[0].Header[0].OrderStatus;
+                    console.log(orderId, status)
+                    const updatedStatusPromise = axios.post(
+                        `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-04/orders/${orderId}/${dict[status]}`
+                    )
+                    responses.push(updatedStatusPromise)
+                });
+            }
+        }
+        await Promise.allSettled(responses)
+        res.send({status: 'ok'})
+    } catch(e) {
+        res.send(e)
     }
-   const dict = {
-        'COMP': 'close.json',
-        'CNCL': 'cancel.json',
-        'CNFD': 'open.json'
-    }
-    const responses = []
-    const files = await fs.readdir('./request/status');
-    for(let i = 0; i < files.length; i++) {
-        const xml = await fs.readFile(`./request/status/${files[i]}`);
-        parseString(xml, (err, result) => {
-            const orderId = result.OrderReplies.OrderReply[0].Header[0].OrderNo;
-            const status = result.OrderReplies.OrderReply[0].Header[0].OrderStatus
-            const updatedStatusPromise = axios.post(
-                `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-04/orders/${orderId}/${dict[status]}`
-            )
-            responses.push(updatedStatusPromise)
-        });
-    }
-    const response = await Promise.allSettled(responses)
-    const resp = response.map(({data}) => data)
-    for (const file of await fs.readdir('./request/status')) {
-        await fs.unlink(path.join('./request/status/', file));
-      }
-    res.send(resp)
 })
 
 app.put('/inventory', async (req, res)=>{
@@ -371,10 +364,6 @@ app.put('/inventory', async (req, res)=>{
         const list = await sftp.list('/OUT');
         const remoteFilePath = '/OUT/' + list[0].name;
         const stream = await sftp.get(remoteFilePath)
-        const file = 'request/' + list[0].name;
-        fs.writeFile(file, stream, (err) => {
-            if (err) console.log(err);
-        });
         const productsPromise = axios.get(
             `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2022-10/products.json`
             )
@@ -382,9 +371,8 @@ app.put('/inventory', async (req, res)=>{
             `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/locations.json`
             )
         const [products, locations] = await Promise.all([productsPromise, locationsPromise])
-        const xml = await fs.readFile(file);
         const inventoryCalls =[]
-        parseString(xml, (err, result) => {
+        parseString(stream, (err, result) => {
             for(let i = 0; i < result.ExItemAvailQtyList.Item.length; i++) {
                 const product = findProductBySku(products.data.products, result.ExItemAvailQtyList.Item[i].ItemNo[0])
                 const location = locations.data.locations[0]
@@ -401,7 +389,6 @@ app.put('/inventory', async (req, res)=>{
             }
         });
         await Promise.allSettled(inventoryCalls)
-        await fs.unlink(path.join('./request/', file));
         res.send({status: 'ok'})
     } catch(e) {
         console.log(e)
