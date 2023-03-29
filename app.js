@@ -7,13 +7,13 @@ const qs = require('qs');
 const { getGender } = require('gender-detection-from-name');
 const { createMollieClient } = require('@mollie/api-client');
 require('dotenv').config()
-const path = require('path')
-const parseString = require('xml2js').parseString
+const xml2js = require('xml2js')
 const app = express();
 const PORT = 3000;
 const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_KEY })
 const Client = require('ssh2-sftp-client');
 const sftp = new Client();
+const parser = new xml2js.Parser();
 const getProductsFromLines = lines => {
     let cursor = 1;
     const products = lines.map(line => {
@@ -134,7 +134,7 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments, paypalPayments)
             key: process.env.FIEGE_SERVER_KEY
         },
         order : {
-            id: shopifyOrder.id,
+            id: shopifyOrder.id + 909898,
             date: shopifyOrder.created_at.split('T')[0],
             time: shopifyOrder.created_at.split('T')[1],
         },
@@ -231,7 +231,7 @@ const paypalTransactions = async () => {
       const token = await axios.request(config)
       const today = new Date()
       const yesterday = new Date(today)
-      yesterday.setDate(yesterday.getDate() - 1)
+      yesterday.setDate(yesterday.getDate() - 10)
         let configTransaction = {
             method: 'get',
             maxBodyLength: Infinity,
@@ -255,8 +255,8 @@ const getPayPal = (paypalPayments, order) => {
         const difference = cat - paypalPaymentTime;
         const paypalPrice = paypalPayments.transaction_details[0].transaction_info.transaction_amount.value
         if(difference > 0 && difference < 8000 && paypalPrice === order.current_total_price) {
-            id = paypalPayments.transaction_details[i].transaction_info.transaction_id
-            description = paypalPayments.transaction_details[i].transaction_info.paypal_account_id
+            id = paypalPayments.transaction_details[i].transaction_info.paypal_account_id
+            description = paypalPayments.transaction_details[i].transaction_info.transaction_id
         }
     }
     return {id, description};
@@ -320,36 +320,37 @@ app.get('/test/:status/:number', async (req, res)=>{
         const [orders, xml, molliePayments, paypalPayments] = await Promise.all([ordersPromise, xmlPromise, molliePaymentsPromise, paypalPaymentsPromise]) 
         const adaptedData = await orderRequestAdapter(orders.data.orders[number], molliePayments, paypalPayments)
         const output = Mustache.render(xml, adaptedData);
-        //const response = await soapRequest({ url, headers: sampleHeaders, xml: output, timeout: 200000 });
-        res.send(output);
+        const response = await soapRequest({ url, headers: sampleHeaders, xml: output, timeout: 200000 });
+        res.send(response);
     } catch(e) {
         console.log(e)
         res.status(500).send(e.message)
     }
 });
 
-app.put('/status', async(req, res) => {
+app.post('/status', async(req, res) => {
     try {
+        const responses = []
         const list = await sftp.list('/OUT');
         const dict = {
             'COMP': 'close.json',
             'CNCL': 'cancel.json',
             'CNFD': 'open.json'
         }
-        const responses = []
         for(let i = 0; i < list.length; i++) {
             if(!list[i].name.includes('FULL_STOCK')) {
                 const remoteFilePath = '/OUT/' + list[i].name;
                 const stream = await sftp.get(remoteFilePath)
-                parseString(stream, (err, result) => {
-                    const orderId = result.OrderReplies.OrderReply[0].Header[0].OrderNo;
-                    const status = result.OrderReplies.OrderReply[0].Header[0].OrderStatus;
-                    console.log(orderId, status)
-                    const updatedStatusPromise = axios.post(
-                        `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-04/orders/${orderId}/${dict[status]}`
-                    )
-                    responses.push(updatedStatusPromise)
-                });
+                const result = await parser.parseStringPromise(stream)
+                const orderId = result.OrderReplies.OrderReply[0].Header[0].OrderNo;
+                const status = result.OrderReplies.OrderReply[0].Header[0].OrderStatus;
+                const configTransaction = {
+                    method: 'post',
+                    maxBodyLength: Infinity,
+                    url: `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-04/orders/${orderId}/${dict[status]}`,
+                };
+                const request = axios.request(configTransaction)
+                responses.push(request)
             }
         }
         await Promise.allSettled(responses)
@@ -359,7 +360,7 @@ app.put('/status', async(req, res) => {
     }
 })
 
-app.put('/inventory', async (req, res)=>{
+app.post('/inventory', async (req, res)=>{
     try {
         const list = await sftp.list('/OUT');
         const remoteFilePath = '/OUT/' + list[0].name;
@@ -372,22 +373,21 @@ app.put('/inventory', async (req, res)=>{
             )
         const [products, locations] = await Promise.all([productsPromise, locationsPromise])
         const inventoryCalls =[]
-        parseString(stream, (err, result) => {
-            for(let i = 0; i < result.ExItemAvailQtyList.Item.length; i++) {
-                const product = findProductBySku(products.data.products, result.ExItemAvailQtyList.Item[i].ItemNo[0])
-                const location = locations.data.locations[0]
-                const payload = {
-                    "location_id":location.id,
-                    "inventory_item_id":product?.variants[0]?.inventory_item_id,
-                    "available":result.ExItemAvailQtyList.Item[i].AvailableQuantity[0]
-                };
-                const responsePromise = axios.post(
-                    `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/inventory_levels/set.json`, 
-                    payload
-                    );
-                inventoryCalls.push(responsePromise)
-            }
-        });
+        const result = await parser.parseStringPromise(stream)
+        for(let i = 0; i < result.ExItemAvailQtyList.Item.length; i++) {
+            const product = findProductBySku(products.data.products, result.ExItemAvailQtyList.Item[i].ItemNo[0])
+            const location = locations.data.locations[0]
+            const payload = {
+                "location_id":location.id,
+                "inventory_item_id":product?.variants[0]?.inventory_item_id,
+                "available":result.ExItemAvailQtyList.Item[i].AvailableQuantity[0]
+            };
+            const responsePromise = axios.post(
+                `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/inventory_levels/set.json`, 
+                payload
+                );
+            inventoryCalls.push(responsePromise)
+        }
         await Promise.allSettled(inventoryCalls)
         res.send({status: 'ok'})
     } catch(e) {
