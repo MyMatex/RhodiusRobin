@@ -255,8 +255,8 @@ const getPayPal = (paypalPayments, order) => {
         const difference = cat - paypalPaymentTime;
         const paypalPrice = paypalPayments.transaction_details[0].transaction_info.transaction_amount.value
         if(difference > 0 && difference < 8000 && paypalPrice === order.current_total_price) {
-            id = paypalPayments.transaction_details[i].transaction_info.paypal_account_id
-            description = paypalPayments.transaction_details[i].transaction_info.transaction_id
+            id = paypalPayments.transaction_details[i].transaction_info.transaction_id
+            description = paypalPayments.transaction_details[i].transaction_info.paypal_account_id
         }
     }
     return {id, description};
