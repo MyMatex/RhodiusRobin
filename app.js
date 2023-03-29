@@ -328,7 +328,7 @@ app.get('/test/:status/:number', async (req, res)=>{
     }
 });
 
-app.post('/status', async(req, res) => {
+app.post('/status/update', async(req, res) => {
     try {
         const responses = []
         const list = await sftp.list('/OUT');
@@ -338,7 +338,7 @@ app.post('/status', async(req, res) => {
             'CNFD': 'open.json'
         }
         for(let i = 0; i < list.length; i++) {
-            if(!list[i].name.includes('FULL_STOCK')) {
+            if(!list[i].name.includes('FULL_STOCK') || !list[i].name.includes('E')) {
                 const remoteFilePath = '/OUT/' + list[i].name;
                 const stream = await sftp.get(remoteFilePath)
                 const result = await parser.parseStringPromise(stream)
@@ -360,7 +360,7 @@ app.post('/status', async(req, res) => {
     }
 })
 
-app.post('/inventory', async (req, res)=>{
+app.post('/inventory/update', async (req, res)=>{
     try {
         const list = await sftp.list('/OUT');
         const remoteFilePath = '/OUT/' + list[0].name;
