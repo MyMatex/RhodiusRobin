@@ -330,6 +330,12 @@ app.get('/test/:status/:number', async (req, res)=>{
 
 app.post('/status/update', async(req, res) => {
     try {
+        await sftp.connect({
+            host: process.env.FTP_HOST,
+            port: process.env.FTP_PORT,
+            username: process.env.FTP_USER,
+            password: process.env.FTP_PASSWORD
+          })
         const responses = []
         const list = await sftp.list('/OUT');
         const dict = {
@@ -365,6 +371,12 @@ app.post('/status/update', async(req, res) => {
 
 app.post('/inventory/update', async (req, res)=>{
     try {
+       await sftp.connect({
+            host: process.env.FTP_HOST,
+            port: process.env.FTP_PORT,
+            username: process.env.FTP_USER,
+            password: process.env.FTP_PASSWORD
+          })
         const list = await sftp.list('/OUT');
         const remoteFilePath = '/OUT/' + list[0].name;
         const stream = await sftp.get(remoteFilePath)
