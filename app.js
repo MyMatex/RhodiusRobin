@@ -371,7 +371,7 @@ app.put('/inventory', async (req, res)=>{
         const list = await sftp.list('/OUT');
         const remoteFilePath = '/OUT/' + list[0].name;
         const stream = await sftp.get(remoteFilePath)
-        const file = './request/' + list[0].name;
+        const file = 'request/' + list[0].name;
         fs.writeFile(file, stream, (err) => {
             if (err) console.log(err);
         });
