@@ -114,7 +114,7 @@ const getPSP = (methodCode, creditCompany) => {
         return 'PAYPAL'
     }
 }
-const orderRequestAdapter = async (shopifyOrder, molliePayments, paypalPayments) => {
+const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
     let payment;
     const products = getProductsFromLines(shopifyOrder.line_items)
     const specialItems = getSpecialItemsFromProducts(products)
@@ -125,7 +125,8 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments, paypalPayments)
         payment = getMollie(molliePayments, shopifyOrder)
         await mollieClient.payments.update(payment.id, {description: `${shopifyOrder.id}`, metadata: { orderId: shopifyOrder.id }})
     } else {
-        payment = getPayPal(paypalPayments, shopifyOrder)
+        const paypalPayment = await paypalTransactions(new Date(shopifyOrder.created_at))
+        payment = getPayPal(paypalPayment, shopifyOrder)
     }
     return {
         config: {
@@ -208,7 +209,7 @@ const getMollie = (molliePayments, order) => {
     return {id, description};
 }
 
-const paypalTransactions = async () => {
+const paypalTransactions = async (orderDate) => {
     const data = qs.stringify({
         'grant_type': 'client_credentials',
         'ignoreCache': 'true',
@@ -229,13 +230,12 @@ const paypalTransactions = async () => {
       };
       
       const token = await axios.request(config)
-      const today = new Date()
-      const yesterday = new Date(today)
-      yesterday.setDate(yesterday.getDate() - 10)
+      const orderDateMinusTen = new Date(orderDate)
+      orderDateMinusTen.setSeconds(orderDate.getSeconds() - 10)
         let configTransaction = {
             method: 'get',
             maxBodyLength: Infinity,
-            url: `https://api-m.paypal.com/v1/reporting/transactions?fields=transaction_info,payer_info,shipping_info,auction_info,cart_info,incentive_info,store_info&start_date=${yesterday.toISOString()}&end_date=${today.toISOString()}`,
+            url: `https://api-m.paypal.com/v1/reporting/transactions?fields=transaction_info,payer_info,shipping_info,auction_info,cart_info,incentive_info,store_info&start_date=${orderDateMinusTen.toISOString()}&end_date=${orderDate.toISOString()}`,
             headers: { 
               'Authorization': `Bearer ${token.data.access_token}`, 
               'Cookie': 'l7_az=ccg14.slc'
@@ -248,13 +248,9 @@ const paypalTransactions = async () => {
 const getPayPal = (paypalPayments, order) => {
     let id = '';
     let description = '';
-    const cat = new Date(order.created_at).getTime();
     for(let i = 0; i < paypalPayments.transaction_details.length; i++) {
-        const paypalPaymentTime = 
-            new Date(paypalPayments.transaction_details[i].transaction_info.transaction_initiation_date).getTime();
-        const difference = cat - paypalPaymentTime;
         const paypalPrice = paypalPayments.transaction_details[0].transaction_info.transaction_amount.value
-        if(difference > 0 && difference < 8000 && paypalPrice === order.current_total_price) {
+        if(paypalPrice === order.current_total_price) {
             id = paypalPayments.transaction_details[i].transaction_info.transaction_id
             description = paypalPayments.transaction_details[i].transaction_info.paypal_account_id
         }
@@ -269,9 +265,8 @@ app.post('/:status', async (req, res)=>{
             `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/orders.json?status=${status}`
             )
         const molliePaymentsPromise = mollieClient.payments.page({ limit: 15 });
-        const paypalPaymentsPromise = paypalTransactions()
-        const [orders, molliePayments, paypalPayments] = await Promise.all([ordersPromise, molliePaymentsPromise, paypalPaymentsPromise])
-        const orderRequests = createOrderRequest(orders.data.orders.slice(0,9), molliePayments, paypalPayments)
+        const [orders, molliePayments] = await Promise.all([ordersPromise, molliePaymentsPromise])
+        const orderRequests = createOrderRequest(orders.data.orders.slice(0,9), molliePayments)
         const ordersResponse = await Promise.allSettled(orderRequests)
         console.log(JSON.stringify(ordersResponse))
         res.send(ordersResponse);
@@ -316,12 +311,11 @@ app.get('/test/:status/:number', async (req, res)=>{
             )
         const xmlPromise = fs.readFile('request/createOrder.xml', 'utf-8');
         const molliePaymentsPromise = mollieClient.payments.page({ limit: 15 });
-        const paypalPaymentsPromise = paypalTransactions()
-        const [orders, xml, molliePayments, paypalPayments] = await Promise.all([ordersPromise, xmlPromise, molliePaymentsPromise, paypalPaymentsPromise]) 
-        const adaptedData = await orderRequestAdapter(orders.data.orders[number], molliePayments, paypalPayments)
+        const [orders, xml, molliePayments] = await Promise.all([ordersPromise, xmlPromise, molliePaymentsPromise]) 
+        const adaptedData = await orderRequestAdapter(orders.data.orders[number], molliePayments)
         const output = Mustache.render(xml, adaptedData);
-        const response = await soapRequest({ url, headers: sampleHeaders, xml: output, timeout: 200000 });
-        res.send(response);
+        //const response = await soapRequest({ url, headers: sampleHeaders, xml: output, timeout: 200000 });
+        res.send(output);
     } catch(e) {
         console.log(e)
         res.status(500).send(e.message)
