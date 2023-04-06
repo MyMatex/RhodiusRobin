@@ -291,7 +291,7 @@ app.post('/:status', async (req, res)=>{
         const [orders, molliePayments] = await Promise.all([ordersPromise, molliePaymentsPromise])
         const orderRequests = createOrderRequest(orders.data.orders.slice(0,9), molliePayments)
         ordersResponse = await Promise.allSettled(orderRequests)
-        //console.log(JSON.stringify(ordersResponse))
+        console.log(JSON.stringify(ordersResponse))
         const failedOrders = ordersResponse.map((orderResp, i) => {
             const isOrderFailed = orderResp?.value?.response?.body.includes('500')
             const isOrderOutOfTheSystem = !orderResp?.value?.response?.body.includes('existiert bereits')
