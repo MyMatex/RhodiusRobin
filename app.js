@@ -267,7 +267,7 @@ const formatErrors = errors => errors.map(error => ({ error }))
 
 app.get('/errors/retry', async(req, res) => {
     try {
-        const errorsPromise = errorModel.find({}).limit(10);
+        const errorsPromise = errorModel.find({}).limit(10).sort({_id: 'asc'});
         const molliePaymentsPromise = mollieClient.payments.page({ limit: 15 });
         const [errors, molliePayments] = await Promise.all([errorsPromise, molliePaymentsPromise])
         const orders = errors.map(({error}) => error)
