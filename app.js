@@ -14,49 +14,56 @@ const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_KEY })
 const Client = require('ssh2-sftp-client');
 const sftp = new Client();
 const parser = new xml2js.Parser();
+const mongoose = require('mongoose');
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('Connected!'));
+const errorSchema = mongoose.Schema({error: Object});
+const errorModel = mongoose.model('Error', errorSchema, 'errors');
 const getProductsFromLines = lines => {
     let cursor = 1;
     const products = lines.map(line => {
         const [id, deposit] = line.sku.split('#');
-        if(deposit === 'DI') {
-            const depositPrice = (12 * 0.25).toFixed(2)
-            const price = (line.price - depositPrice).toFixed(2)
-            const results = [
+        if(line.title !== 'Pfand') {
+            if(deposit === 'DI') {
+                const depositPrice = (12 * 0.25).toFixed(2)
+                const price = (line.price - depositPrice).toFixed(2)
+                const results = [
+                    {
+                    sku: line.sku,
+                    genNumber: `${cursor}0000`,
+                    number: id,
+                    description: line.title,
+                    quantity: line.quantity,
+                    price,
+                    discount: line?.discount_allocations[0]?.amount
+                },
                 {
-                sku: line.sku,
-                genNumber: `${cursor}0000`,
-                number: id,
-                description: line.title,
-                quantity: line.quantity,
-                price,
-                discount: line?.discount_allocations[0]?.amount
-            },
-            {
-                sku: line.sku,
-                genNumber: `${cursor + 1}0000`,
-                number: 'DEPOSITITEM',
-                description: 'pfand',
-                quantity: line.quantity,
-                price: depositPrice
+                    sku: line.sku,
+                    genNumber: `${cursor + 1}0000`,
+                    number: 'DEPOSITITEM',
+                    description: 'pfand',
+                    quantity: line.quantity,
+                    price: depositPrice
+                }
+            ]
+                cursor+=2; 
+                return results;
+            } else {
+                const result = {
+                    sku: line.sku,
+                    genNumber: `${cursor}0000`,
+                    number: id,
+                    description: line.title,
+                    quantity: line.quantity,
+                    price: line.price,
+                } 
+                cursor += 1;
+                return result
             }
-        ]
-            cursor+=2; 
-            return results;
-        } else {
-            const result = {
-                sku: line.sku,
-                genNumber: `${cursor}0000`,
-                number: id,
-                description: line.title,
-                quantity: line.quantity,
-                price: line.price,
-            } 
-            cursor += 1;
-            return result
         }
-
     })
-    return products.flat()
+    return products.flat().filter(item => item)
 }
 const getSpecialItemsFromProducts = products => {
     return products.map(product => {
@@ -135,7 +142,7 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
             key: process.env.FIEGE_SERVER_KEY
         },
         order : {
-            id: shopifyOrder.id + 909898,
+            id: shopifyOrder.id,
             date: shopifyOrder.created_at.split('T')[0],
             time: shopifyOrder.created_at.split('T')[1],
         },
@@ -258,7 +265,25 @@ const getPayPal = (paypalPayments, order) => {
     return {id, description};
 }
 
+const formatErrors = errors => errors.map(error => ({ error }))
+
+app.get('/errors/retry', async(req, res) => {
+    try {
+        const errorsPromise = errorModel.find({}).limit(10);
+        const molliePaymentsPromise = mollieClient.payments.page({ limit: 15 });
+        const [errors, molliePayments] = await Promise.all([errorsPromise, molliePaymentsPromise])
+        const orders = errors.map(({error}) => error)
+        const orderRequests = createOrderRequest(orders, molliePayments)
+        ordersResponse = await Promise.allSettled(orderRequests)
+        res.send(ordersResponse)
+    } catch(e) {
+        console.log(e)
+        res.send(e)
+    }
+})
+
 app.post('/:status', async (req, res)=>{
+    let ordersResponse;
     try {
         const { status } = req.params
         const ordersPromise = axios.get(
@@ -267,12 +292,20 @@ app.post('/:status', async (req, res)=>{
         const molliePaymentsPromise = mollieClient.payments.page({ limit: 15 });
         const [orders, molliePayments] = await Promise.all([ordersPromise, molliePaymentsPromise])
         const orderRequests = createOrderRequest(orders.data.orders.slice(0,9), molliePayments)
-        const ordersResponse = await Promise.allSettled(orderRequests)
-        console.log(JSON.stringify(ordersResponse))
+        ordersResponse = await Promise.allSettled(orderRequests)
+        //console.log(JSON.stringify(ordersResponse))
+        const failedOrders = ordersResponse.map((orderResp, i) => {
+            const isOrderFailed = orderResp?.value?.response?.body.includes('500')
+            const isOrderOutOfTheSystem = !orderResp?.value?.response?.body.includes('existiert bereits')
+            const isOrderRejected = orderResp.status === 'rejected'
+            if((isOrderFailed && isOrderOutOfTheSystem) || isOrderRejected) return orders.data.orders[i]
+        }).filter(order => order)
+        const errors = formatErrors(failedOrders)
+        await errorModel.insertMany(errors,  { ordered: false, rawResult: true })
         res.send(ordersResponse);
     } catch(e) {
         console.log(e)
-        res.status(500).send(e.message)
+        res.send(ordersResponse);
     }
 
 });

@@ -76,12 +76,12 @@
 					{{/products}}
 				</ns2:QuickSalesLines>
                     <ns2:DocumentValue>
-                        		<ns2:Quick_Sales_Sub_Doc_Val_WS>
-                           			<ns2:Line_No>0</ns2:Line_No>
-                           			<ns2:Entry_No>1</ns2:Entry_No>
-                           			<ns2:Identifier>FREEITEM</ns2:Identifier> <!-- Fix -->
-                           			<ns2:ValueText>Autograph</ns2:ValueText> <!-- Free Text -->
-                        		</ns2:Quick_Sales_Sub_Doc_Val_WS>
+                        <ns2:Quick_Sales_Sub_Doc_Val_WS>
+                           	<ns2:Line_No>0</ns2:Line_No>
+                           	<ns2:Entry_No>1</ns2:Entry_No>
+                           	<ns2:Identifier>FREEITEM</ns2:Identifier> <!-- Fix -->
+                           	<ns2:ValueText>Autograph</ns2:ValueText> <!-- Free Text -->
+                        </ns2:Quick_Sales_Sub_Doc_Val_WS>
 					{{#specialItems}}
 					<ns2:Quick_Sales_Sub_Doc_Val_WS>
 						<ns2:Line_No>{{genNumber}}</ns2:Line_No>
