@@ -16,8 +16,6 @@ const sftp = new Client();
 const parser = new xml2js.Parser();
 const mongoose = require('mongoose');
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('Connected!'));
 const errorSchema = mongoose.Schema({error: Object});
 const errorModel = mongoose.model('Error', errorSchema, 'errors');
 const getProductsFromLines = lines => {
@@ -442,6 +440,7 @@ app.post('/inventory/update', async (req, res)=>{
 app.listen(PORT, (error) =>{
     if(!error) {
         console.log("Server is Successfully Running, and App is listening on port "+ PORT)
+        mongoose.connect(process.env.MONGO_URI).then(() => console.log('Connected!'));
     } else {
         console.log("Error occurred, server can't start", error);
     }
