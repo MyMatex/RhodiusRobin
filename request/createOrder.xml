@@ -5,7 +5,7 @@
 			<pRC>
 				<Server>{{config.ip}}</Server>
 				<Port>{{config.port}}</Port>
-				<NavServiceName>RHO110_STG_WS</NavServiceName>
+				<NavServiceName>RHO110_PRD_WS</NavServiceName>
 				<Company>Rhodius</Company>
 				<ServiceType>Page</ServiceType>
 				<AppUserKey>{{config.key}}</AppUserKey>
