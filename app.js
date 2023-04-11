@@ -289,14 +289,17 @@ app.post('/:status', async (req, res)=>{
             )
         const molliePaymentsPromise = mollieClient.payments.page({ limit: 15 });
         const [orders, molliePayments] = await Promise.all([ordersPromise, molliePaymentsPromise])
-        const orderRequests = createOrderRequest(orders.data.orders.slice(0,9), molliePayments)
+        const prodOrders = orders.data.orders.map(order => {
+            if(order.billing_address.name !== 'Testi Tester') return order
+        })
+        const orderRequests = createOrderRequest(prodOrders.slice(0,9), molliePayments)
         ordersResponse = await Promise.allSettled(orderRequests)
         console.log(JSON.stringify(ordersResponse))
         const failedOrders = ordersResponse.map((orderResp, i) => {
             const isOrderFailed = orderResp?.value?.response?.body.includes('500')
             const isOrderOutOfTheSystem = !orderResp?.value?.response?.body.includes('existiert bereits')
             const isOrderRejected = orderResp.status === 'rejected'
-            if((isOrderFailed && isOrderOutOfTheSystem) || isOrderRejected) return orders.data.orders[i]
+            if((isOrderFailed && isOrderOutOfTheSystem) || isOrderRejected) return prodOrders[i]
         }).filter(order => order)
         const errors = formatErrors(failedOrders)
         await errorModel.insertMany(errors,  { ordered: false, rawResult: true })
@@ -343,7 +346,10 @@ app.get('/single/:status/:number', async (req, res)=>{
         const xmlPromise = fs.readFile('request/createOrder.xml', 'utf-8');
         const molliePaymentsPromise = mollieClient.payments.page({ limit: 15 });
         const [orders, xml, molliePayments] = await Promise.all([ordersPromise, xmlPromise, molliePaymentsPromise]) 
-        const adaptedData = await orderRequestAdapter(orders.data.orders[number], molliePayments)
+        const prodOrders = orders.data.orders.map(order => {
+            if(order.billing_address.name !== 'Testi Tester') return order
+        })
+        const adaptedData = await orderRequestAdapter(prodOrders[number], molliePayments)
         const output = Mustache.render(xml, adaptedData);
         const response = await soapRequest({ url, headers: sampleHeaders, xml: output, timeout: 200000 });
         res.send(response);
@@ -367,10 +373,10 @@ app.get('/test/:status/:number', async (req, res)=>{
         const xmlPromise = fs.readFile('request/createOrder.xml', 'utf-8');
         const molliePaymentsPromise = mollieClient.payments.page({ limit: 15 });
         const [orders, xml, molliePayments] = await Promise.all([ordersPromise, xmlPromise, molliePaymentsPromise]) 
-        const adaptedData = await orderRequestAdapter(orders.data.orders[number], molliePayments)
-        const output = Mustache.render(xml, adaptedData);
+        //const adaptedData = await orderRequestAdapter(orders.data.orders[number], molliePayments)
+        //const output = Mustache.render(xml, adaptedData);
         //const response = await soapRequest({ url, headers: sampleHeaders, xml: output, timeout: 200000 });
-        res.send(output);
+        res.send();
     } catch(e) {
         console.log(e)
         res.status(500).send(e.message)
