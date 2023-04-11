@@ -329,6 +329,30 @@ app.get('/dictionary/:status', async(req, res) => {
     res.set('Content-Type', 'text/html');
     res.send(Buffer.from(dictionary.toString()));
 })
+app.get('/single/:status/:number', async (req, res)=>{
+    try {
+        const url = process.env.FIEGE_ENDPOINT;
+        const sampleHeaders = {
+            'user-agent': 'sampleTest',
+            'Content-Type': 'text/xml;charset=UTF-8',
+            };
+        const { status, number } = req.params
+        const ordersPromise = axios.get(
+            `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/orders.json?status=${status}`
+            )
+        const xmlPromise = fs.readFile('request/createOrder.xml', 'utf-8');
+        const molliePaymentsPromise = mollieClient.payments.page({ limit: 15 });
+        const [orders, xml, molliePayments] = await Promise.all([ordersPromise, xmlPromise, molliePaymentsPromise]) 
+        const adaptedData = await orderRequestAdapter(orders.data.orders[number], molliePayments)
+        const output = Mustache.render(xml, adaptedData);
+        const response = await soapRequest({ url, headers: sampleHeaders, xml: output, timeout: 200000 });
+        res.send(response);
+    } catch(e) {
+        console.log(e)
+        res.status(500).send(e.message)
+    }
+});
+
 app.get('/test/:status/:number', async (req, res)=>{
     try {
         const url = process.env.FIEGE_ENDPOINT;
