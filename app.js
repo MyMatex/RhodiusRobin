@@ -403,7 +403,7 @@ app.post('/inventory/update', async (req, res)=>{
             password: process.env.FTP_PASSWORD
           })
         const list = await sftp.list('/OUT');
-        const remoteFilePath = '/OUT/' + list[0].name;
+        const remoteFilePath = '/OUT/' + list[list.length - 1].name;
         const stream = await sftp.get(remoteFilePath)
         const productsPromise = axios.get(
             `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2022-10/products.json`
@@ -416,7 +416,7 @@ app.post('/inventory/update', async (req, res)=>{
         const result = await parser.parseStringPromise(stream)
         for(let i = 0; i < result.ExItemAvailQtyList.Item.length; i++) {
             const product = findProductBySku(products.data.products, result.ExItemAvailQtyList.Item[i].ItemNo[0])
-            const location = locations.data.locations[0]
+            const location = locations.data.locations[1]
             const payload = {
                 "location_id":location.id,
                 "inventory_item_id":product?.variants[0]?.inventory_item_id,
@@ -428,7 +428,8 @@ app.post('/inventory/update', async (req, res)=>{
                 );
             inventoryCalls.push(responsePromise)
         }
-        await Promise.allSettled(inventoryCalls)
+        const response = await Promise.allSettled(inventoryCalls)
+        console.log(JSON.stringify(response))
         res.send({status: 'ok'})
     } catch(e) {
         console.log(e)
