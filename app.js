@@ -18,49 +18,84 @@ const mongoose = require('mongoose');
 
 const errorSchema = mongoose.Schema({error: Object});
 const errorModel = mongoose.model('Error', errorSchema, 'errors');
+
+const bundleLines = quantity => {
+    return [
+        {
+            sku: '760153#DI',
+            title: `Robin Schulz x MY MATE (12er Karton)`,
+            quantity,
+            price: 14.99,
+            discount_allocations: [{
+                amount: 0.9
+            }]
+        },
+        {
+            title: `Robin Schulz x MY MATE + Secco (12er Karton)`,
+            quantity,
+            price: 19.99,
+            discount_allocations: [{
+                amount: 1.15
+            }],
+            sku: '760155#DI',
+        },
+        {
+            title: `Robin Schulz x MY MATE + Vodka (12er Karton))`,
+            quantity,
+            price: 29.99,
+            discount_allocations: [{
+                amount: 1.65
+            }],
+            sku: '760154#DI',
+        },
+    ]
+}
 const getProductsFromLines = lines => {
     let cursor = 1;
-    const products = lines.map(line => {
-        const [id, deposit] = line.sku.split('#');
-        if(line.title !== 'Pfand') {
-            if(deposit === 'DI') {
-                const depositPrice = (12 * 0.25).toFixed(2)
-                const price = (line.price - depositPrice).toFixed(2)
-                const results = [
+    let products;
+    const quantity = lines[0].quantity
+    lines = lines.concat(bundleLines(quantity))
+        products = lines.map(line => {
+            const [id, deposit] = line.sku.split('#');
+            if(line.title !== 'Pfand' && id !== '760157') {
+                if(deposit === 'DI') {
+                    const depositPrice = (12 * 0.25).toFixed(2)
+                    const price = (line.price - depositPrice).toFixed(2)
+                    const results = [
+                        {
+                        sku: line.sku,
+                        genNumber: `${cursor}0000`,
+                        number: id,
+                        description: line.title,
+                        quantity: line.quantity,
+                        price,
+                        discount: line?.discount_allocations[0]?.amount
+                    },
                     {
-                    sku: line.sku,
-                    genNumber: `${cursor}0000`,
-                    number: id,
-                    description: line.title,
-                    quantity: line.quantity,
-                    price,
-                    discount: line?.discount_allocations[0]?.amount
-                },
-                {
-                    sku: line.sku,
-                    genNumber: `${cursor + 1}0000`,
-                    number: 'DEPOSITITEM',
-                    description: 'pfand',
-                    quantity: line.quantity,
-                    price: depositPrice
+                        sku: line.sku,
+                        genNumber: `${cursor + 1}0000`,
+                        number: 'DEPOSITITEM',
+                        description: 'pfand',
+                        quantity: line.quantity,
+                        price: depositPrice
+                    }
+                ]
+                    cursor+=2; 
+                    return results;
+                } else {
+                    const result = {
+                        sku: line.sku,
+                        genNumber: `${cursor}0000`,
+                        number: id,
+                        description: line.title,
+                        quantity: line.quantity,
+                        price: line.price,
+                    } 
+                    cursor += 1;
+                    return result
                 }
-            ]
-                cursor+=2; 
-                return results;
-            } else {
-                const result = {
-                    sku: line.sku,
-                    genNumber: `${cursor}0000`,
-                    number: id,
-                    description: line.title,
-                    quantity: line.quantity,
-                    price: line.price,
-                } 
-                cursor += 1;
-                return result
             }
-        }
-    })
+        })
     return products.flat().filter(item => item)
 }
 const getSpecialItemsFromProducts = products => {
