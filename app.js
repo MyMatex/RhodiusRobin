@@ -432,7 +432,10 @@ app.post('/inventory/update', async (req, res)=>{
             password: process.env.FTP_PASSWORD
           })
         const list = await sftp.list('/OUT');
-        const remoteFilePath = '/OUT/' + list[list.length - 1].name;
+        const filteredList = list.map(name =>{
+            if(name.name.includes('FULL_STOCK')) return name
+        }).filter(element => element)
+        const remoteFilePath = '/OUT/' + filteredList[filteredList.length - 1].name;
         const stream = await sftp.get(remoteFilePath)
         const productsPromise = axios.get(
             `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2022-10/products.json`
@@ -458,7 +461,6 @@ app.post('/inventory/update', async (req, res)=>{
             inventoryCalls.push(responsePromise)
         }
         const response = await Promise.allSettled(inventoryCalls)
-        console.log(JSON.stringify(response))
         res.send({status: 'ok'})
     } catch(e) {
         console.log(e)
