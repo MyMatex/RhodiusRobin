@@ -25,7 +25,7 @@ const bundleLines = quantity => {
             sku: '760153#DI',
             title: `Robin Schulz x MY MATE (12er Karton)`,
             quantity,
-            price: 11.99,
+            price: 17.99,
             discount_allocations: [{
                 amount: 0.9
             }]
@@ -33,7 +33,7 @@ const bundleLines = quantity => {
         {
             title: `Robin Schulz x MY MATE + Secco (12er Karton)`,
             quantity,
-            price: 16.99,
+            price: 22.99,
             discount_allocations: [{
                 amount: 1.15
             }],
@@ -42,7 +42,7 @@ const bundleLines = quantity => {
         {
             title: `Robin Schulz x MY MATE + Vodka (12er Karton))`,
             quantity,
-            price: 26.99,
+            price: 32.99,
             discount_allocations: [{
                 amount: 1.65
             }],
