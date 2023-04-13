@@ -53,7 +53,7 @@ const bundleLines = quantity => {
 const getProductsFromLines = lines => {
     let cursor = 1;
     let products;
-    if(lines.find(line => line.sku.split('#')[0] === '760157') {
+    if(lines.find(line => line.sku.split('#')[0] === '760157')) {
            const quantity = lines[0].quantity
             lines = lines.concat(bundleLines(quantity))
      }
