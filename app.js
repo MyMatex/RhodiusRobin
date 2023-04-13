@@ -53,8 +53,10 @@ const bundleLines = quantity => {
 const getProductsFromLines = lines => {
     let cursor = 1;
     let products;
-    const quantity = lines[0].quantity
-    lines = lines.concat(bundleLines(quantity))
+    if(lines.find(line => line.sku.split('#')[0] === '760157') {
+           const quantity = lines[0].quantity
+            lines = lines.concat(bundleLines(quantity))
+     }
         products = lines.map(line => {
             const [id, deposit] = line.sku.split('#');
             if(line.title !== 'Pfand' && id !== '760157') {
