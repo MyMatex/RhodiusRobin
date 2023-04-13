@@ -271,7 +271,7 @@ const paypalTransactions = async (orderDate) => {
       
       const token = await axios.request(config)
       const orderDateMinusTen = new Date(orderDate)
-      orderDateMinusTen.setSeconds(orderDate.getSeconds() - 10)
+      orderDateMinusTen.setSeconds(orderDate.getSeconds() - 50)
         let configTransaction = {
             method: 'get',
             maxBodyLength: Infinity,
