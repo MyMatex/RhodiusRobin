@@ -19,7 +19,7 @@ const mongoose = require('mongoose');
 const errorSchema = mongoose.Schema({error: Object});
 const errorModel = mongoose.model('Error', errorSchema, 'errors');
 
-const bundleLines = quantity => {
+const bundleLines = (quantity,hasBundleDiscount) => {
     return [
         {
             sku: '760153#DI',
@@ -27,7 +27,7 @@ const bundleLines = quantity => {
             quantity,
             price: 17.99,
             discount_allocations: [{
-                amount: 0.9
+                amount: hasBundleDiscount ? 0.9 : 0
             }]
         },
         {
@@ -35,7 +35,7 @@ const bundleLines = quantity => {
             quantity,
             price: 22.99,
             discount_allocations: [{
-                amount: 1.15
+                amount: hasBundleDiscount ? 1.15 : 0
             }],
             sku: '760155#DI',
         },
@@ -44,7 +44,7 @@ const bundleLines = quantity => {
             quantity,
             price: 32.99,
             discount_allocations: [{
-                amount: 1.65
+                amount: hasBundleDiscount ? 1.65 : 0
             }],
             sku: '760154#DI',
         },
@@ -53,9 +53,11 @@ const bundleLines = quantity => {
 const getProductsFromLines = lines => {
     let cursor = 1;
     let products;
-    if(lines.find(line => line.sku.split('#')[0] === '760157')) {
-           const quantity = lines[0].quantity
-            lines = lines.concat(bundleLines(quantity))
+    const bundle = lines.find(line => line.sku.split('#')[0] === '760157');
+    if(bundle) {
+           const quantity = bundle.quantity
+           const hasBundleDiscount = bundle.discount_allocations[0]?.amount > 0
+           lines = lines.concat(bundleLines(quantity, hasBundleDiscount))
      }
         products = lines.map(line => {
             const [id, deposit] = line.sku.split('#');
