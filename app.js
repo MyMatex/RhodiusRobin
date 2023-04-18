@@ -37,7 +37,7 @@ const bundleLines = (quantity,hasBundleDiscount) => {
             discount_allocations: [{
                 amount: hasBundleDiscount ? 1.15 : 0
             }],
-            sku: '760154#DI',
+            sku: '760154#DI#VERIFYAGE',
         },
         {
             title: `Robin Schulz x MY MATE + Vodka (12er Karton))`,
@@ -46,7 +46,7 @@ const bundleLines = (quantity,hasBundleDiscount) => {
             discount_allocations: [{
                 amount: hasBundleDiscount ? 1.65 : 0
             }],
-            sku: '760155#DI',
+            sku: '760155#DI#VERIFYAGE',
         },
     ]
 }
