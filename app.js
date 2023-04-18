@@ -217,6 +217,31 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
 }
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+const markOrderAsPlaced = async id => {
+    try {
+        const data = JSON.stringify({
+            order: {
+              id,
+              note: "placed"
+            }
+          });
+          
+          const config = {
+            method: 'put',
+            maxBodyLength: Infinity,
+            url: 'https://6217ae56efac00e3ff97a24ea7750330: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@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-04/orders/5539606298951.json',
+            headers: { 
+              'Content-Type': 'application/json'
+            },
+            data
+          };
+          const response = await axios.request(config)
+          return response;
+    } catch(e) {
+        console.log(e)
+    }
+}
+
 const createOrderRequest = (orders, molliePayments, paypalPayments) => {
     const url = process.env.FIEGE_ENDPOINT;
     const sampleHeaders = {
@@ -228,7 +253,9 @@ const createOrderRequest = (orders, molliePayments, paypalPayments) => {
         const xml = await fs.readFile('request/createOrder.xml', 'utf-8');
         const adaptedData = await orderRequestAdapter(order, molliePayments, paypalPayments)
         const output = Mustache.render(xml, adaptedData);
-        return soapRequest({ url: url, headers: sampleHeaders, xml: output, timeout: 200000 });
+        const soapOrderRequest = soapRequest({ url: url, headers: sampleHeaders, xml: output, timeout: 200000 });
+        await markOrderAsPlaced(adaptedData.order.id)
+        return soapOrderRequest
     })
 }
 
@@ -329,9 +356,10 @@ app.post('/:status', async (req, res)=>{
         const molliePaymentsPromise = mollieClient.payments.page({ limit: 15 });
         const [orders, molliePayments] = await Promise.all([ordersPromise, molliePaymentsPromise])
         const prodOrders = orders.data.orders.map(order => {
-            if(order.billing_address.name !== 'Testi Tester') return order
-        })
-        const orderRequests = createOrderRequest(prodOrders.slice(0,9), molliePayments)
+            if(order.billing_address.name !== 'Testi Tester' && order.note !== 'placed') return order
+        }).slice(0,9).filter(order => order)
+        console.log(prodOrders)
+        const orderRequests = createOrderRequest(prodOrders, molliePayments)
         ordersResponse = await Promise.allSettled(orderRequests)
         console.log(JSON.stringify(ordersResponse))
         const failedOrders = ordersResponse.map((orderResp, i) => {
