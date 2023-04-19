@@ -194,7 +194,6 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
         shiping: {
             address: {
                 street: shopifyOrder.shipping_address?.address1,
-                number: 1,
                 city: shopifyOrder.shipping_address?.city,
                 postalCode: shopifyOrder.shipping_address?.zip
             },
