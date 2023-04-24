@@ -228,7 +228,7 @@ const markOrderAsPlaced = async id => {
           const config = {
             method: 'put',
             maxBodyLength: Infinity,
-            url: 'https://6217ae56efac00e3ff97a24ea7750330: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@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-04/orders/5539606298951.json',
+            url: `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-04/orders/${id}.json`,
             headers: { 
               'Content-Type': 'application/json'
             },
