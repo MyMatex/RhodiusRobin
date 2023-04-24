@@ -172,6 +172,9 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
         const paypalPayment = await paypalTransactions(new Date(shopifyOrder.created_at))
         payment = getPayPal(paypalPayment, shopifyOrder)
     }
+    const street =shopifyOrder.shipping_address?.company ?
+     `${shopifyOrder.shipping_address?.address1}, ${shopifyOrder.shipping_address?.company}` :
+     `${shopifyOrder.shipping_address?.address1}`
     return {
         config: {
             ip: process.env.FIEGE_SERVER_IP,
@@ -193,7 +196,7 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
         },
         shiping: {
             address: {
-                street: shopifyOrder.shipping_address?.address1,
+                street,
                 city: shopifyOrder.shipping_address?.city,
                 postalCode: shopifyOrder.shipping_address?.zip
             },
