@@ -348,6 +348,11 @@ app.get('/errors/retry', async(req, res) => {
     }
 })
 
+app.post('/alert/notification', (req, res) => {
+    console.log(req.body)
+    res.send(req.body)
+})
+
 app.post('/:status', async (req, res)=>{
     let ordersResponse;
     try {
