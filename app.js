@@ -167,7 +167,7 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
     const methodCode = getMethodCode(method)
     if(methodCode === 'KL_MO_MPAY' || methodCode === 'CC_MO_MPAY') {
         payment = getMollie(molliePayments, shopifyOrder)
-        await mollieClient.payments.update(payment.id, {description: `${shopifyOrder.id}`, metadata: { orderId: shopifyOrder.id }})
+        await mollieClient.payments.update(payment.id, {description: `${shopifyOrder.order_number}`, metadata: { orderId: shopifyOrder.order_number }})
     } else {
         const paypalPayment = await paypalTransactions(new Date(shopifyOrder.created_at))
         payment = getPayPal(paypalPayment, shopifyOrder)
@@ -182,7 +182,7 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
             key: process.env.FIEGE_SERVER_KEY
         },
         order : {
-            id: shopifyOrder.id,
+            id: shopifyOrder.order_number,
             date: shopifyOrder.created_at.split('T')[0],
             time: shopifyOrder.created_at.split('T')[1],
         },
@@ -435,11 +435,6 @@ app.get('/single/:status/:number', async (req, res)=>{
 
 app.get('/test/:status/:number', async (req, res)=>{
     try {
-        const url = process.env.FIEGE_ENDPOINT;
-        const sampleHeaders = {
-            'user-agent': 'sampleTest',
-            'Content-Type': 'text/xml;charset=UTF-8',
-            };
         const { status, number } = req.params
         const ordersPromise = axios.get(
             `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-01/orders.json?status=${status}`
