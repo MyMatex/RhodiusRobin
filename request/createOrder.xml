@@ -44,7 +44,7 @@
 				<ns2:Ship_to_Street>{{shiping.address.street}}</ns2:Ship_to_Street>
 				<ns2:Ship_to_House_No>{{shiping.address.number}}</ns2:Ship_to_House_No>
 				<ns2:Ship_to_House_No_Adding/>
-				<ns2:Ship_to_Address_2/>
+				<ns2:Ship_to_Address_2>{{shiping.address.company}}</ns2:Ship_to_Address_2>
 				<ns2:Ship_to_City>{{shipping.address.city}}</ns2:Ship_to_City>
 				<ns2:Ship_to_Post_Code>{{shipping.address.postalCode}}</ns2:Ship_to_Post_Code>
 				<ns2:Shipping_Agent_Code>DHL</ns2:Shipping_Agent_Code>
