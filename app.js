@@ -130,9 +130,9 @@ const getDepositItemsFromProducts = products => {
 const getServiceCode = products => {
     const foundItem = products.find(product => {
         const serviceCode = product.sku.split('#')[2];
-        return serviceCode === 'VERIFY';
+        return serviceCode === 'VERIFYAGE';
     })
-    return foundItem ? 'VERIFY' : 'STANDARD'
+    return foundItem ? 'VERIFYAGE' : 'STANDARD'
 }
 const getMethodCode = method => {
     if(method?.includes('Klarna')) {
