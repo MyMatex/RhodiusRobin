@@ -21,10 +21,10 @@
 				<ns2:Sell_to_Customer_Name>{{customer.name}}</ns2:Sell_to_Customer_Name>
 				<ns2:Sell_to_Customer_First_Name>{{customer.firstName}}</ns2:Sell_to_Customer_First_Name>
 				<ns2:Sell_to_Customer_Surname>{{customer.lastName}}</ns2:Sell_to_Customer_Surname>
-				<ns2:Sell_to_Street>{{shiping.address.street}}</ns2:Sell_to_Street>
+				<ns2:Sell_to_Address>{{shiping.address.street}}</ns2:Sell_to_Address>
 				<ns2:Sell_to_House_No>{{shiping.address.number}}</ns2:Sell_to_House_No>
 				<ns2:Sell_to_House_No_Adding/>
-				<ns2:Sell_to_Address_2/>
+				<ns2:Sell_to_Address_2>{{shiping.address.company}}</ns2:Sell_to_Address_2>
 				<ns2:Sell_to_City>{{shiping.address.city}}</ns2:Sell_to_City>
 				<ns2:Sell_to_Post_Code>{{shiping.address.postalCode}}</ns2:Sell_to_Post_Code>
 				<ns2:Sell_to_E_Mail>{{customer.email}}</ns2:Sell_to_E_Mail> <!-- Customer E-Mail -->
@@ -41,7 +41,7 @@
 				<ns2:Ship_to_Name>{{customer.name}}</ns2:Ship_to_Name>
 				<ns2:Ship_to_Customer_First_Name>{{customer.firstName}}</ns2:Ship_to_Customer_First_Name>
 				<ns2:Ship_to_Customer_Surname>{{customer.lastName}}</ns2:Ship_to_Customer_Surname>
-				<ns2:Ship_to_Street>{{shiping.address.street}}</ns2:Ship_to_Street>
+				<ns2:Ship_to_Address>{{shiping.address.street}}</ns2:Ship_to_Address>
 				<ns2:Ship_to_House_No>{{shiping.address.number}}</ns2:Ship_to_House_No>
 				<ns2:Ship_to_House_No_Adding/>
 				<ns2:Ship_to_Address_2>{{shiping.address.company}}</ns2:Ship_to_Address_2>
