@@ -19,7 +19,7 @@ const mongoose = require('mongoose');
 const errorSchema = mongoose.Schema({error: Object});
 const errorModel = mongoose.model('Error', errorSchema, 'errors');
 
-const bundleLines = (quantity,hasBundleDiscount) => {
+const bundleLines = (quantity,hasBundleDiscount, discountPercentage) => {
     return [
         {
             sku: '760153#DI',
@@ -27,7 +27,7 @@ const bundleLines = (quantity,hasBundleDiscount) => {
             quantity,
             price: 17.99,
             discount_allocations: [{
-                amount: hasBundleDiscount ? 0.9 * quantity : 0
+                amount: hasBundleDiscount ? ((17.99 * discountPercentage) * quantity).toFixed(2) : 0
             }]
         },
         {
@@ -35,7 +35,7 @@ const bundleLines = (quantity,hasBundleDiscount) => {
             quantity,
             price: 22.99,
             discount_allocations: [{
-                amount: hasBundleDiscount ? 1.15 * quantity : 0
+                amount: hasBundleDiscount ? ((22.99 * discountPercentage) * quantity).toFixed(2) : 0
             }],
             sku: '760155#DI#VERIFYAGE',
         },
@@ -44,7 +44,7 @@ const bundleLines = (quantity,hasBundleDiscount) => {
             quantity,
             price: 32.99,
             discount_allocations: [{
-                amount: hasBundleDiscount ? 1.65 * quantity : 0
+                amount: hasBundleDiscount ? ((32.99 * discountPercentage) * quantity).toFixed(2) : 0
             }],
             sku: '760154#DI#VERIFYAGE',
         },
@@ -57,7 +57,8 @@ const getProductsFromLines = lines => {
     if(bundle) {
            const quantity = bundle.quantity
            const hasBundleDiscount = bundle.discount_allocations[0]?.amount > 0
-           lines = lines.concat(bundleLines(quantity, hasBundleDiscount))
+           const discountPercentage = bundle.discount_allocations[0]?.amount / bundle.price
+           lines = lines.concat(bundleLines(quantity, hasBundleDiscount, discountPercentage))
      }
         products = lines.map(line => {
             const [id, deposit] = line.sku.split('#');
@@ -227,7 +228,7 @@ const markOrderAsPlaced = async id => {
           });
           
           const config = {
-            method: 'put',
+            method: 'PUT',
             maxBodyLength: Infinity,
             url: `https://${process.env.SHOPIFY_USER}:${process.env.SHOPIFY_KEY}@robin-schulz-x-my-mate.myshopify.com/admin/api/2023-04/orders/${id}.json`,
             headers: { 
@@ -254,7 +255,7 @@ const createOrderRequest = (orders, molliePayments, paypalPayments) => {
         const adaptedData = await orderRequestAdapter(order, molliePayments, paypalPayments)
         const output = Mustache.render(xml, adaptedData);
         const soapOrderRequest = soapRequest({ url: url, headers: sampleHeaders, xml: output, timeout: 200000 });
-        await markOrderAsPlaced(adaptedData.order.id)
+        await markOrderAsPlaced(order.id)
         return soapOrderRequest
     })
 }
