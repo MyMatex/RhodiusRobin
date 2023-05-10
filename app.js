@@ -27,7 +27,7 @@ const bundleLines = (quantity,hasBundleDiscount, discountPercentage) => {
             quantity,
             price: 17.99,
             discount_allocations: [{
-                amount: hasBundleDiscount ? ((17.99 * discountPercentage) * quantity).toFixed(2) : 0
+                amount: hasBundleDiscount ? (17.99 * discountPercentage).toFixed(2) : 0
             }]
         },
         {
@@ -35,7 +35,7 @@ const bundleLines = (quantity,hasBundleDiscount, discountPercentage) => {
             quantity,
             price: 22.99,
             discount_allocations: [{
-                amount: hasBundleDiscount ? ((22.99 * discountPercentage) * quantity).toFixed(2) : 0
+                amount: hasBundleDiscount ? (22.99 * discountPercentage).toFixed(2) : 0
             }],
             sku: '760155#DI#VERIFYAGE',
         },
@@ -44,7 +44,7 @@ const bundleLines = (quantity,hasBundleDiscount, discountPercentage) => {
             quantity,
             price: 32.99,
             discount_allocations: [{
-                amount: hasBundleDiscount ? ((32.99 * discountPercentage) * quantity).toFixed(2) : 0
+                amount: hasBundleDiscount ? (32.99 * discountPercentage).toFixed(2) : 0
             }],
             sku: '760154#DI#VERIFYAGE',
         },
