@@ -161,7 +161,6 @@ const getPSP = (methodCode, creditCompany) => {
 }
 const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
     let payment;
-    debugger;
     const products = getProductsFromLines(shopifyOrder.line_items);
     const specialItems = getSpecialItemsFromProducts(products);
     const depositItems = getDepositItemsFromProducts(products);
