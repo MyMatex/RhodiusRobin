@@ -161,11 +161,12 @@ const getPSP = (methodCode, creditCompany) => {
 }
 const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
     let payment;
-    const products = getProductsFromLines(shopifyOrder.line_items)
-    const specialItems = getSpecialItemsFromProducts(products)
-    const depositItems = getDepositItemsFromProducts(products)
-    const [PSP, method] = shopifyOrder?.gateway?.split('-')
-    const methodCode = getMethodCode(method)
+    debugger;
+    const products = getProductsFromLines(shopifyOrder.line_items);
+    const specialItems = getSpecialItemsFromProducts(products);
+    const depositItems = getDepositItemsFromProducts(products);
+    const [PSP, method] = shopifyOrder?.gateway?.split('-');
+    const methodCode = getMethodCode(method);
     if(methodCode === 'KL_MO_MPAY' || methodCode === 'CC_MO_MPAY') {
         payment = getMollie(molliePayments, shopifyOrder)
         await mollieClient.payments.update(payment.id, {description: `${shopifyOrder.order_number}`, metadata: { orderId: shopifyOrder.order_number }})
