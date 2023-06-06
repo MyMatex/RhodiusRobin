@@ -162,8 +162,11 @@ const getPSP = (methodCode, creditCompany) => {
 const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
     let payment;
     const products = getProductsFromLines(shopifyOrder.line_items);
+    console.log("products", products);
     const specialItems = getSpecialItemsFromProducts(products);
+    console.log("specialItems", specialItems);
     const depositItems = getDepositItemsFromProducts(products);
+    console.log("depositItems", depositItems);
     const [PSP, method] = shopifyOrder?.gateway?.split('-');
     const methodCode = getMethodCode(method);
     if(methodCode === 'KL_MO_MPAY' || methodCode === 'CC_MO_MPAY') {
