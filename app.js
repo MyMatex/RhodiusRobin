@@ -53,6 +53,12 @@ const bundleLines = (quantity,hasBundleDiscount, discountPercentage, bundleTotal
     if (bundleTotalDiscount !== 0) {
       // confirm that the total of the discount is equal to the sum of the discounts of the bundle items
       const totalDiscount = bundle_items.reduce((acc, item) => acc + item.discount_allocations[0]?.amount, 0)
+      console.log("totalDiscount", totalDiscount);
+      console.log("totalDiscount type", typeof totalDiscount);
+      console.log("bundleTotalDiscount", bundleTotalDiscount);
+      console.log("bundleTotalDiscount type", typeof bundleTotalDiscount);
+      console.log("bundle_items[2].discount_allocations[0].amount", bundle_items[2].discount_allocations[0].amount);
+      console.log("bundle_items[2].discount_allocations[0].amount type", typeof bundle_items[2].discount_allocations[0].amount);
       if(totalDiscount !== bundleTotalDiscount) {
         if (totalDiscount > bundleTotalDiscount) {
           bundle_items[2].discount_allocations[0].amount = bundle_items[2].discount_allocations[0].amount - (totalDiscount - bundleTotalDiscount).toFixed(2);
@@ -177,11 +183,8 @@ const getPSP = (methodCode, creditCompany) => {
 const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
     let payment;
     const products = getProductsFromLines(shopifyOrder.line_items);
-    console.log("products", products);
     const specialItems = getSpecialItemsFromProducts(products);
-    console.log("specialItems", specialItems);
     const depositItems = getDepositItemsFromProducts(products);
-    console.log("depositItems", depositItems);
     const [PSP, method] = shopifyOrder?.gateway?.split('-');
     const methodCode = getMethodCode(method);
     if(methodCode === 'KL_MO_MPAY' || methodCode === 'CC_MO_MPAY') {
