@@ -50,20 +50,19 @@ const bundleLines = (quantity,hasBundleDiscount, discountPercentage, bundleTotal
         },
     ];
 
-    if (bundleTotalDiscount !== 0) {
+    if (hasBundleDiscount) {
       // confirm that the total of the discount is equal to the sum of the discounts of the bundle items
-      const totalDiscount = bundle_items.reduce((acc, item) => acc + item.discount_allocations[0]?.amount, 0)
+      const totalDiscount = bundle_items.reduce((acc, item) => acc + parseFloat(item.discount_allocations[0]?.amount), 0)
+      const bundleTotalDiscountDouble = parseFloat(bundleTotalDiscount);
       console.log("totalDiscount", totalDiscount);
       console.log("totalDiscount type", typeof totalDiscount);
-      console.log("bundleTotalDiscount", bundleTotalDiscount);
-      console.log("bundleTotalDiscount type", typeof bundleTotalDiscount);
-      console.log("bundle_items[2].discount_allocations[0].amount", bundle_items[2].discount_allocations[0].amount);
-      console.log("bundle_items[2].discount_allocations[0].amount type", typeof bundle_items[2].discount_allocations[0].amount);
-      if(totalDiscount !== bundleTotalDiscount) {
-        if (totalDiscount > bundleTotalDiscount) {
-          bundle_items[2].discount_allocations[0].amount = bundle_items[2].discount_allocations[0].amount - (totalDiscount - bundleTotalDiscount).toFixed(2);
-        } else if (totalDiscount < bundleTotalDiscount) {
-          bundle_items[2].discount_allocations[0].amount = bundle_items[2].discount_allocations[0].amount + (bundleTotalDiscount - totalDiscount).toFixed(2);
+      console.log("bundleTotalDiscount", bundleTotalDiscountDouble);
+      console.log("bundleTotalDiscount type", typeof bundleTotalDiscountDouble);
+      if(totalDiscount !== bundleTotalDiscountDouble) {
+        if (totalDiscount > bundleTotalDiscountDouble) {
+          bundle_items[2].discount_allocations[0].amount = parseFloat(bundle_items[2].discount_allocations[0].amount) - (totalDiscount - bundleTotalDiscountDouble).toFixed(2);
+        } else if (totalDiscount < bundleTotalDiscountDouble) {
+          bundle_items[2].discount_allocations[0].amount = parseFloat(bundle_items[2].discount_allocations[0].amount) + (bundleTotalDiscountDouble - totalDiscount).toFixed(2);
         }
       }
     }
