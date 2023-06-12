@@ -19,8 +19,8 @@ const mongoose = require('mongoose');
 const errorSchema = mongoose.Schema({error: Object});
 const errorModel = mongoose.model('Error', errorSchema, 'errors');
 
-const bundleLines = (quantity,hasBundleDiscount, discountPercentage) => {
-    return [
+const bundleLines = (quantity,hasBundleDiscount, discountPercentage, bundleTotalDiscount) => {
+    let bundle_items = [
         {
             sku: '760153#DI',
             title: `Robin Schulz x MY MATE (12er Karton)`,
@@ -48,7 +48,22 @@ const bundleLines = (quantity,hasBundleDiscount, discountPercentage) => {
             }],
             sku: '760154#DI#VERIFYAGE',
         },
-    ]
+    ];
+
+    if (hasBundleDiscount) {
+      // confirm that the total of the discount is equal to the sum of the discounts of the bundle items
+      const totalDiscount = bundle_items.reduce((acc, item) => acc + parseFloat(item.discount_allocations[0]?.amount), 0).toFixed(2);
+      const bundleTotalDiscountDouble = parseFloat(bundleTotalDiscount);
+      if(totalDiscount !== bundleTotalDiscountDouble) {
+        if (totalDiscount > bundleTotalDiscountDouble) {
+          bundle_items[2].discount_allocations[0].amount = (parseFloat(bundle_items[2].discount_allocations[0].amount) - (totalDiscount - bundleTotalDiscountDouble).toFixed(2)).toFixed(2);
+        } else if (totalDiscount < bundleTotalDiscountDouble) {
+          bundle_items[2].discount_allocations[0].amount = (parseFloat(bundle_items[2].discount_allocations[0].amount) + (bundleTotalDiscountDouble - totalDiscount).toFixed(2)).toFixed(2);
+        }
+      }
+    }
+
+    return bundle_items;
 }
 const getProductsFromLines = lines => {
     let cursor = 1;
@@ -56,9 +71,10 @@ const getProductsFromLines = lines => {
     const bundle = lines.find(line => line.sku.split('#')[0] === '760157');
     if(bundle) {
            const quantity = bundle.quantity
-           const hasBundleDiscount = bundle.discount_allocations[0]?.amount > 0
+           const bundleTotalDiscount = bundle.discount_allocations[0]?.amount;
+           const hasBundleDiscount = bundleTotalDiscount > 0
            const discountPercentage = bundle.discount_allocations[0]?.amount / bundle.price
-           lines = lines.concat(bundleLines(quantity, hasBundleDiscount, discountPercentage))
+           lines = lines.concat(bundleLines(quantity, hasBundleDiscount, discountPercentage, bundleTotalDiscount))
      }
         products = lines.map(line => {
             const [id, deposit] = line.sku.split('#');
@@ -161,11 +177,11 @@ const getPSP = (methodCode, creditCompany) => {
 }
 const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
     let payment;
-    const products = getProductsFromLines(shopifyOrder.line_items)
-    const specialItems = getSpecialItemsFromProducts(products)
-    const depositItems = getDepositItemsFromProducts(products)
-    const [PSP, method] = shopifyOrder?.gateway?.split('-')
-    const methodCode = getMethodCode(method)
+    const products = getProductsFromLines(shopifyOrder.line_items);
+    const specialItems = getSpecialItemsFromProducts(products);
+    const depositItems = getDepositItemsFromProducts(products);
+    const [PSP, method] = shopifyOrder?.gateway?.split('-');
+    const methodCode = getMethodCode(method);
     if(methodCode === 'KL_MO_MPAY' || methodCode === 'CC_MO_MPAY') {
         payment = getMollie(molliePayments, shopifyOrder)
         await mollieClient.payments.update(payment.id, {description: `${shopifyOrder.order_number}`, metadata: { orderId: shopifyOrder.order_number }})
