@@ -53,7 +53,9 @@ const bundleLines = (quantity,hasBundleDiscount, discountPercentage, bundleTotal
     if (hasBundleDiscount) {
       // confirm that the total of the discount is equal to the sum of the discounts of the bundle items
       const totalDiscount = bundle_items.reduce((acc, item) => acc + parseFloat(item.discount_allocations[0]?.amount), 0).toFixed(2);
+      console.log("totalDiscount", totalDiscount);
       const bundleTotalDiscountDouble = parseFloat(bundleTotalDiscount);
+      console.log("bundleTotalDiscountDouble", bundleTotalDiscountDouble);
       if(totalDiscount !== bundleTotalDiscountDouble) {
         if (totalDiscount > bundleTotalDiscountDouble) {
           bundle_items[2].discount_allocations[0].amount = (parseFloat(bundle_items[2].discount_allocations[0].amount) - (totalDiscount - bundleTotalDiscountDouble).toFixed(2)).toFixed(2);
