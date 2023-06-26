@@ -88,9 +88,9 @@ const bundleLines = (quantity,hasBundleDiscount, discountPercentage, bundleTotal
       const bundleTotalDiscountDouble = parseFloat(bundleTotalDiscount);
       if(totalDiscount !== bundleTotalDiscountDouble) {
         if (totalDiscount > bundleTotalDiscountDouble) {
-          bundle_items[2].discount_allocations[0].amount = (parseFloat(bundle_items[2].discount_allocations[0].amount) - (totalDiscount - bundleTotalDiscountDouble).toFixed(2)).toFixed(2);
+          bundle_items[2].discount_allocations[0].amount = (parseFloat(bundle_items[2].discount_allocations[0].amount) - parseFloat((totalDiscount - bundleTotalDiscountDouble).toFixed(2))).toFixed(2);
         } else if (totalDiscount < bundleTotalDiscountDouble) {
-          bundle_items[2].discount_allocations[0].amount = (parseFloat(bundle_items[2].discount_allocations[0].amount) + (bundleTotalDiscountDouble - totalDiscount).toFixed(2)).toFixed(2);
+          bundle_items[2].discount_allocations[0].amount = (parseFloat(bundle_items[2].discount_allocations[0].amount) + parseFloat((bundleTotalDiscountDouble - totalDiscount).toFixed(2))).toFixed(2);
         }
       }
     }
