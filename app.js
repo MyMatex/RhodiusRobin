@@ -21,6 +21,38 @@ const errorModel = mongoose.model('Error', errorSchema, 'errors');
 
 const bundleLines = (quantity,hasBundleDiscount, discountPercentage, bundleTotalDiscount) => {
     let bundle_items = [
+      {
+        sku: '760153#DI',
+        title: `Robin Schulz x MY MATE (12er Karton)`,
+        quantity,
+        price: 16.84, // 13.84 + 3 deposit
+        discount_allocations: [{
+          amount: hasBundleDiscount ? (16.84 * discountPercentage).toFixed(2) : 0
+        }]
+      },
+      {
+        title: `Robin Schulz x MY MATE + Secco (12er Karton)`,
+        quantity,
+        price: 21.46, // 18.46 + 3 deposit
+        discount_allocations: [{
+          amount: hasBundleDiscount ? (21.46 * discountPercentage).toFixed(2) : 0
+        }],
+        sku: '760155#DI#VERIFYAGE',
+      },
+      {
+        title: `Robin Schulz x MY MATE + Vodka (12er Karton))`,
+        quantity,
+        price: 30.69, // 27.69 + 3 deposit
+        discount_allocations: [{
+          amount: hasBundleDiscount ? (30.69 * discountPercentage).toFixed(2) : 0
+        }],
+        sku: '760154#DI#VERIFYAGE',
+      },
+    ];
+
+    /*
+      Old Price
+      [
         {
           sku: '760153#DI',
           title: `Robin Schulz x MY MATE (12er Karton)`,
@@ -49,38 +81,6 @@ const bundleLines = (quantity,hasBundleDiscount, discountPercentage, bundleTotal
           sku: '760154#DI#VERIFYAGE',
         },
       ];
-
-    /*
-      New Price
-      [
-        {
-            sku: '760153#DI',
-            title: `Robin Schulz x MY MATE (12er Karton)`,
-            quantity,
-            price: 16.84, // 13.84 + 3 deposit
-            discount_allocations: [{
-                amount: hasBundleDiscount ? (16.84 * discountPercentage).toFixed(2) : 0
-            }]
-        },
-        {
-            title: `Robin Schulz x MY MATE + Secco (12er Karton)`,
-            quantity,
-            price: 21.46, // 18.46 + 3 deposit
-            discount_allocations: [{
-                amount: hasBundleDiscount ? (21.46 * discountPercentage).toFixed(2) : 0
-            }],
-            sku: '760155#DI#VERIFYAGE',
-        },
-        {
-            title: `Robin Schulz x MY MATE + Vodka (12er Karton))`,
-            quantity,
-            price: 30.69, // 27.69 + 3 deposit
-            discount_allocations: [{
-                amount: hasBundleDiscount ? (30.69 * discountPercentage).toFixed(2) : 0
-            }],
-            sku: '760154#DI#VERIFYAGE',
-        },
-    ];
     */
     if (hasBundleDiscount) {
       // confirm that the total of the discount is equal to the sum of the discounts of the bundle items
