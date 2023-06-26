@@ -22,6 +22,38 @@ const errorModel = mongoose.model('Error', errorSchema, 'errors');
 const bundleLines = (quantity,hasBundleDiscount, discountPercentage, bundleTotalDiscount) => {
     let bundle_items = [
         {
+          sku: '760153#DI',
+          title: `Robin Schulz x MY MATE (12er Karton)`,
+          quantity,
+          price: 17.99,
+          discount_allocations: [{
+            amount: hasBundleDiscount ? (17.99 * discountPercentage).toFixed(2) : 0
+          }]
+        },
+        {
+          title: `Robin Schulz x MY MATE + Secco (12er Karton)`,
+          quantity,
+          price: 22.99,
+          discount_allocations: [{
+            amount: hasBundleDiscount ? (22.99 * discountPercentage).toFixed(2) : 0
+          }],
+          sku: '760155#DI#VERIFYAGE',
+        },
+        {
+          title: `Robin Schulz x MY MATE + Vodka (12er Karton))`,
+          quantity,
+          price: 32.99,
+          discount_allocations: [{
+            amount: hasBundleDiscount ? (32.99 * discountPercentage).toFixed(2) : 0
+          }],
+          sku: '760154#DI#VERIFYAGE',
+        },
+      ];
+
+    /*
+      New Price
+      [
+        {
             sku: '760153#DI',
             title: `Robin Schulz x MY MATE (12er Karton)`,
             quantity,
@@ -49,7 +81,7 @@ const bundleLines = (quantity,hasBundleDiscount, discountPercentage, bundleTotal
             sku: '760154#DI#VERIFYAGE',
         },
     ];
-
+    */
     if (hasBundleDiscount) {
       // confirm that the total of the discount is equal to the sum of the discounts of the bundle items
       const totalDiscount = bundle_items.reduce((acc, item) => acc + parseFloat(item.discount_allocations[0]?.amount), 0).toFixed(2);
