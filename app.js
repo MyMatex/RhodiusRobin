@@ -240,8 +240,10 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
             lastName: shopifyOrder.customer.last_name,
             email: shopifyOrder.customer.email
         },
-        shiping: {
+        shipping: {
             address: {
+                firstName: shopifyOrder.shipping_address?.first_name,
+                lastName: shopifyOrder.shipping_address?.last_name,
                 street: shopifyOrder.shipping_address?.address1,
                 company: shopifyOrder.shipping_address?.company,
                 city: shopifyOrder.shipping_address?.city,
@@ -249,10 +251,20 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
             },
             serviceCode: getServiceCode(shopifyOrder.line_items)
         },
+        billing: {
+          address: {
+            firstName: shopifyOrder.shipping_address?.first_name,
+            lastName: shopifyOrder.shipping_address?.last_name,
+            street: shopifyOrder.billing_address?.address1,
+            company: shopifyOrder.billing_address?.company,
+            city: shopifyOrder.billing_address?.city,
+            postalCode: shopifyOrder.billing_address?.zip
+          }
+        },
         payment: {
             amount: shopifyOrder.current_total_price,
-            shipingAmount: shopifyOrder.total_shipping_price_set.shop_money.amount,
-            isShipingFree: shopifyOrder.total_shipping_price_set.shop_money.amount === 0,
+            shippingAmount: shopifyOrder.total_shipping_price_set.shop_money.amount,
+            isShippingFree: shopifyOrder.total_shipping_price_set.shop_money.amount === 0,
             methodCode,
             PSP: getPSP(methodCode, shopifyOrder?.payment_details?.credit_card_company),
             id: payment.id,

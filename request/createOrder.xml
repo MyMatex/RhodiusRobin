@@ -18,37 +18,37 @@
 				<ns2:Sell_to_Country_Region_Code>DE</ns2:Sell_to_Country_Region_Code>
 				<ns2:Sell_to_Cust_Salutation_Code>{{customer.gender}}</ns2:Sell_to_Cust_Salutation_Code> <!-- H = Male / F = Female -->
 				<ns2:Sell_to_Customer_No>{{customer.number}}</ns2:Sell_to_Customer_No> <!-- Shopify Internal Customer No -->
-				<ns2:Sell_to_Customer_Name>{{customer.name}}</ns2:Sell_to_Customer_Name>
-				<ns2:Sell_to_Customer_First_Name>{{customer.firstName}}</ns2:Sell_to_Customer_First_Name>
-				<ns2:Sell_to_Customer_Surname>{{customer.lastName}}</ns2:Sell_to_Customer_Surname>
-				<ns2:Sell_to_Address>{{shiping.address.street}}</ns2:Sell_to_Address>
-				<ns2:Sell_to_House_No>{{shiping.address.number}}</ns2:Sell_to_House_No>
+				<ns2:Sell_to_Customer_Name>{{billing.address.firstName}} {{billing.address.lastName}}</ns2:Sell_to_Customer_Name>
+				<ns2:Sell_to_Customer_First_Name>{{billing.address.firstName}}</ns2:Sell_to_Customer_First_Name>
+				<ns2:Sell_to_Customer_Surname>{{billing.address.lastName}}</ns2:Sell_to_Customer_Surname>
+				<ns2:Sell_to_Address>{{billing.address.street}}</ns2:Sell_to_Address>
+				<ns2:Sell_to_House_No>{{billing.address.number}}</ns2:Sell_to_House_No>
 				<ns2:Sell_to_House_No_Adding/>
-				<ns2:Sell_to_Customer_Name_2>{{shiping.address.company}}</ns2:Sell_to_Customer_Name_2>
-				<ns2:Sell_to_City>{{shiping.address.city}}</ns2:Sell_to_City>
-				<ns2:Sell_to_Post_Code>{{shiping.address.postalCode}}</ns2:Sell_to_Post_Code>
+				<ns2:Sell_to_Customer_Name_2>{{billing.address.company}}</ns2:Sell_to_Customer_Name_2>
+				<ns2:Sell_to_City>{{billing.address.city}}</ns2:Sell_to_City>
+				<ns2:Sell_to_Post_Code>{{billing.address.postalCode}}</ns2:Sell_to_Post_Code>
 				<ns2:Sell_to_E_Mail>{{customer.email}}</ns2:Sell_to_E_Mail> <!-- Customer E-Mail -->
 				<ns2:Sell_to_Cust_Type>Person</ns2:Sell_to_Cust_Type> <!-- fix -->
 				<ns2:Amount>{{payment.amount}}</ns2:Amount> <!-- Total Order Amount incl. Shipment, Deposit etc. -->
-				<ns2:Shipping_Charge_Amount>{{payment.shipingAmount}}</ns2:Shipping_Charge_Amount>
-				<ns2:Shipping_Charge_free>{{payment.isShipingFree}}</ns2:Shipping_Charge_free> <!-- true / false -->
+				<ns2:Shipping_Charge_Amount>{{payment.shippingAmount}}</ns2:Shipping_Charge_Amount>
+				<ns2:Shipping_Charge_free>{{payment.isShippingFree}}</ns2:Shipping_Charge_free> <!-- true / false -->
 				<ns2:Payment_Method_Code>{{payment.methodCode}}</ns2:Payment_Method_Code>
 				<ns2:PSP_Organisation>{{payment.PSP}}</ns2:PSP_Organisation>
 				<ns2:External_Reference_No>{{payment.id}}</ns2:External_Reference_No>
 				<ns2:External_Transaction_No>{{payment.transactionId}}</ns2:External_Transaction_No> 
 				<ns2:Ship_to_Cust_Salutation_Code>H</ns2:Ship_to_Cust_Salutation_Code>
 				<ns2:Ship_to_Country_Region_Code>DE</ns2:Ship_to_Country_Region_Code>
-				<ns2:Ship_to_Name>{{customer.name}}</ns2:Ship_to_Name>
-				<ns2:Ship_to_Customer_First_Name>{{customer.firstName}}</ns2:Ship_to_Customer_First_Name>
-				<ns2:Ship_to_Customer_Surname>{{customer.lastName}}</ns2:Ship_to_Customer_Surname>
-				<ns2:Ship_to_Address>{{shiping.address.street}}</ns2:Ship_to_Address>
-				<ns2:Ship_to_House_No>{{shiping.address.number}}</ns2:Ship_to_House_No>
+				<ns2:Ship_to_Name>{{shipping.address.firstName}} {{shipping.address.lastName}}</ns2:Ship_to_Name>
+				<ns2:Ship_to_Customer_First_Name>{{shipping.address.firstName}}</ns2:Ship_to_Customer_First_Name>
+				<ns2:Ship_to_Customer_Surname>{{shipping.address.lastName}}</ns2:Ship_to_Customer_Surname>
+				<ns2:Ship_to_Address>{{shipping.address.street}}</ns2:Ship_to_Address>
+				<ns2:Ship_to_House_No>{{shipping.address.number}}</ns2:Ship_to_House_No>
 				<ns2:Ship_to_House_No_Adding/>
-				<ns2:Ship_to_Name_2>{{shiping.address.company}}</ns2:Ship_to_Name_2>
+				<ns2:Ship_to_Name_2>{{shipping.address.company}}</ns2:Ship_to_Name_2>
 				<ns2:Ship_to_City>{{shipping.address.city}}</ns2:Ship_to_City>
 				<ns2:Ship_to_Post_Code>{{shipping.address.postalCode}}</ns2:Ship_to_Post_Code>
 				<ns2:Shipping_Agent_Code>DHL</ns2:Shipping_Agent_Code>
-				<ns2:Shipping_Agent_Service_Code>{{shiping.serviceCode}}</ns2:Shipping_Agent_Service_Code> <!-- VERIFYAGE -->
+				<ns2:Shipping_Agent_Service_Code>{{shipping.serviceCode}}</ns2:Shipping_Agent_Service_Code> <!-- VERIFYAGE -->
 				<ns2:Language_Code>DEU</ns2:Language_Code>
 				<ns2:Prices_Including_VAT>true</ns2:Prices_Including_VAT> <!-- fix -->
 				<ns2:Promotion_Medium_No>RHODIUS.DE</ns2:Promotion_Medium_No> <!-- fix -->
