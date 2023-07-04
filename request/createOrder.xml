@@ -22,6 +22,7 @@
 				<ns2:Sell_to_Customer_First_Name>{{billing.address.firstName}}</ns2:Sell_to_Customer_First_Name>
 				<ns2:Sell_to_Customer_Surname>{{billing.address.lastName}}</ns2:Sell_to_Customer_Surname>
 				<ns2:Sell_to_Address>{{billing.address.street}}</ns2:Sell_to_Address>
+                <ns2:Sell_to_Address_2>{{billing.address.address2}}</ns2:Sell_to_Address_2>
 				<ns2:Sell_to_House_No>{{billing.address.number}}</ns2:Sell_to_House_No>
 				<ns2:Sell_to_House_No_Adding/>
 				<ns2:Sell_to_Customer_Name_2>{{billing.address.company}}</ns2:Sell_to_Customer_Name_2>
@@ -42,6 +43,7 @@
 				<ns2:Ship_to_Customer_First_Name>{{shipping.address.firstName}}</ns2:Ship_to_Customer_First_Name>
 				<ns2:Ship_to_Customer_Surname>{{shipping.address.lastName}}</ns2:Ship_to_Customer_Surname>
 				<ns2:Ship_to_Address>{{shipping.address.street}}</ns2:Ship_to_Address>
+                <ns2:Ship_to_Address_2>{{shipping.address.address2}}</ns2:Ship_to_Address_2>
 				<ns2:Ship_to_House_No>{{shipping.address.number}}</ns2:Ship_to_House_No>
 				<ns2:Ship_to_House_No_Adding/>
 				<ns2:Ship_to_Name_2>{{shipping.address.company}}</ns2:Ship_to_Name_2>

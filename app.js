@@ -245,6 +245,7 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
                 firstName: shopifyOrder.shipping_address?.first_name,
                 lastName: shopifyOrder.shipping_address?.last_name,
                 street: shopifyOrder.shipping_address?.address1,
+                address2: shopifyOrder.shipping_address?.address2,
                 company: shopifyOrder.shipping_address?.company,
                 city: shopifyOrder.shipping_address?.city,
                 postalCode: shopifyOrder.shipping_address?.zip
@@ -256,6 +257,7 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
             firstName: shopifyOrder.shipping_address?.first_name,
             lastName: shopifyOrder.shipping_address?.last_name,
             street: shopifyOrder.billing_address?.address1,
+            address2: shopifyOrder.billing_address?.address2,
             company: shopifyOrder.billing_address?.company,
             city: shopifyOrder.billing_address?.city,
             postalCode: shopifyOrder.billing_address?.zip
