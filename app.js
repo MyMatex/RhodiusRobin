@@ -236,7 +236,7 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
     let billing_to_street = shopifyOrder.shipping_address?.address1;
     let billing_to_house_number = "";
     if (billing_to_street !== undefined && billing_to_street.split(/(?= \d| [\w\d/]+$)/)[0] !== undefined) {
-      let split_billing_street_name = shipping_to_street.split(/(?= \d| [\w\d/]+$)/);
+      let split_billing_street_name = billing_to_street.split(/(?= \d| [\w\d/]+$)/);
       billing_to_street = split_billing_street_name[0];
       if (split_billing_street_name[1] !== undefined) {
         billing_to_house_number = split_billing_street_name[1];
