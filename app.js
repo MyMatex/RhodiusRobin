@@ -221,6 +221,26 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
         const paypalPayment = await paypalTransactions(new Date(shopifyOrder.created_at))
         payment = getPayPal(paypalPayment, shopifyOrder)
     }
+
+
+    let shipping_to_street = shopifyOrder.shipping_address?.address1;
+    let shipping_to_house_number = "";
+    if (shipping_to_street !== undefined && shipping_to_street.split(/(?= \d| [\w\d/]+$)/)[0] !== undefined) {
+      shipping_to_street = shipping_to_street.split(/(?= \d| [\w\d/]+$)/)[0];
+      if (shipping_to_street.split(/(?= \d| [\w\d/]+$)/)[1] !== undefined) {
+        shipping_to_house_number = shipping_to_street.split(/(?= \d| [\w\d/]+$)/)[1];
+      }
+    }
+
+    let billing_to_street = shopifyOrder.shipping_address?.address1;
+    let billing_to_house_number = "";
+    if (billing_to_street !== undefined && billing_to_street.split(/(?= \d| [\w\d/]+$)/)[0] !== undefined) {
+      billing_to_street = billing_to_street.split(/(?= \d| [\w\d/]+$)/)[0];
+      if (billing_to_street.split(/(?= \d| [\w\d/]+$)/)[1] !== undefined) {
+        billing_to_house_number = billing_to_street.split(/(?= \d| [\w\d/]+$)/)[1];
+      }
+    }
+
     return {
         config: {
             ip: process.env.FIEGE_SERVER_IP,
@@ -244,7 +264,8 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
             address: {
                 firstName: shopifyOrder.shipping_address?.first_name,
                 lastName: shopifyOrder.shipping_address?.last_name,
-                street: shopifyOrder.shipping_address?.address1,
+                street: shipping_to_street,
+                houseNumber: shipping_to_house_number,
                 address2: shopifyOrder.shipping_address?.address2,
                 company: shopifyOrder.shipping_address?.company,
                 city: shopifyOrder.shipping_address?.city,
@@ -256,7 +277,8 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
           address: {
             firstName: shopifyOrder.shipping_address?.first_name,
             lastName: shopifyOrder.shipping_address?.last_name,
-            street: shopifyOrder.billing_address?.address1,
+            street: billing_to_street,
+            houseNumber: billing_to_house_number,
             address2: shopifyOrder.billing_address?.address2,
             company: shopifyOrder.billing_address?.company,
             city: shopifyOrder.billing_address?.city,
