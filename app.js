@@ -226,18 +226,20 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
     let shipping_to_street = shopifyOrder.shipping_address?.address1;
     let shipping_to_house_number = "";
     if (shipping_to_street !== undefined && shipping_to_street.split(/(?= \d| [\w\d/]+$)/)[0] !== undefined) {
-      shipping_to_street = shipping_to_street.split(/(?= \d| [\w\d/]+$)/)[0];
-      if (shipping_to_street.split(/(?= \d| [\w\d/]+$)/)[1] !== undefined) {
-        shipping_to_house_number = shipping_to_street.split(/(?= \d| [\w\d/]+$)/)[1];
+      let split_street_name = shipping_to_street.split(/(?= \d| [\w\d/]+$)/);
+      shipping_to_street = split_street_name[0];
+      if (split_street_name[1] !== undefined) {
+        shipping_to_house_number = split_street_name[1];
       }
     }
 
     let billing_to_street = shopifyOrder.shipping_address?.address1;
     let billing_to_house_number = "";
     if (billing_to_street !== undefined && billing_to_street.split(/(?= \d| [\w\d/]+$)/)[0] !== undefined) {
-      billing_to_street = billing_to_street.split(/(?= \d| [\w\d/]+$)/)[0];
-      if (billing_to_street.split(/(?= \d| [\w\d/]+$)/)[1] !== undefined) {
-        billing_to_house_number = billing_to_street.split(/(?= \d| [\w\d/]+$)/)[1];
+      let split_billing_street_name = shipping_to_street.split(/(?= \d| [\w\d/]+$)/);
+      billing_to_street = split_billing_street_name[0];
+      if (split_billing_street_name[1] !== undefined) {
+        billing_to_house_number = split_billing_street_name[1];
       }
     }
 
