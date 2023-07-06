@@ -225,6 +225,8 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
 
     let shipping_to_street = shopifyOrder.shipping_address?.address1;
     let shipping_to_house_number = "";
+    /*
+    Commenting this out until needed
     if (shipping_to_street !== undefined && shipping_to_street.split(/(?= \d| [\w\d/]+$)/).length <= 2) {
       let split_street_name = shipping_to_street.split(/(?= \d| [\w\d/]+$)/);
       shipping_to_street = split_street_name[0];
@@ -232,9 +234,12 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
         shipping_to_house_number = split_street_name[1];
       }
     }
+    */
 
     let billing_to_street = shopifyOrder.shipping_address?.address1;
     let billing_to_house_number = "";
+    /*
+    Commenting this out until needed
     if (billing_to_street !== undefined && billing_to_street.split(/(?= \d| [\w\d/]+$)/).length <= 2) {
       let split_billing_street_name = billing_to_street.split(/(?= \d| [\w\d/]+$)/);
       billing_to_street = split_billing_street_name[0];
@@ -242,6 +247,7 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
         billing_to_house_number = split_billing_street_name[1];
       }
     }
+    */
 
     return {
         config: {
