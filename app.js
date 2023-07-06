@@ -221,6 +221,34 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
         const paypalPayment = await paypalTransactions(new Date(shopifyOrder.created_at))
         payment = getPayPal(paypalPayment, shopifyOrder)
     }
+
+
+    let shipping_to_street = shopifyOrder.shipping_address?.address1;
+    let shipping_to_house_number = "";
+    /*
+    Commenting this out until needed
+    if (shipping_to_street !== undefined && shipping_to_street.split(/(?= \d| [\w\d/]+$)/).length <= 2) {
+      let split_street_name = shipping_to_street.split(/(?= \d| [\w\d/]+$)/);
+      shipping_to_street = split_street_name[0];
+      if (split_street_name[1] !== undefined) {
+        shipping_to_house_number = split_street_name[1];
+      }
+    }
+    */
+
+    let billing_to_street = shopifyOrder.shipping_address?.address1;
+    let billing_to_house_number = "";
+    /*
+    Commenting this out until needed
+    if (billing_to_street !== undefined && billing_to_street.split(/(?= \d| [\w\d/]+$)/).length <= 2) {
+      let split_billing_street_name = billing_to_street.split(/(?= \d| [\w\d/]+$)/);
+      billing_to_street = split_billing_street_name[0];
+      if (split_billing_street_name[1] !== undefined) {
+        billing_to_house_number = split_billing_street_name[1];
+      }
+    }
+    */
+
     return {
         config: {
             ip: process.env.FIEGE_SERVER_IP,
@@ -240,19 +268,35 @@ const orderRequestAdapter = async (shopifyOrder, molliePayments) => {
             lastName: shopifyOrder.customer.last_name,
             email: shopifyOrder.customer.email
         },
-        shiping: {
+        shipping: {
             address: {
-                street: shopifyOrder.shipping_address?.address1,
+                firstName: shopifyOrder.shipping_address?.first_name,
+                lastName: shopifyOrder.shipping_address?.last_name,
+                street: shipping_to_street,
+                houseNumber: shipping_to_house_number,
+                address2: shopifyOrder.shipping_address?.address2,
                 company: shopifyOrder.shipping_address?.company,
                 city: shopifyOrder.shipping_address?.city,
                 postalCode: shopifyOrder.shipping_address?.zip
             },
             serviceCode: getServiceCode(shopifyOrder.line_items)
         },
+        billing: {
+          address: {
+            firstName: shopifyOrder.shipping_address?.first_name,
+            lastName: shopifyOrder.shipping_address?.last_name,
+            street: billing_to_street,
+            houseNumber: billing_to_house_number,
+            address2: shopifyOrder.billing_address?.address2,
+            company: shopifyOrder.billing_address?.company,
+            city: shopifyOrder.billing_address?.city,
+            postalCode: shopifyOrder.billing_address?.zip
+          }
+        },
         payment: {
             amount: shopifyOrder.current_total_price,
-            shipingAmount: shopifyOrder.total_shipping_price_set.shop_money.amount,
-            isShipingFree: shopifyOrder.total_shipping_price_set.shop_money.amount === 0,
+            shippingAmount: shopifyOrder.total_shipping_price_set.shop_money.amount,
+            isShippingFree: shopifyOrder.total_shipping_price_set.shop_money.amount === 0,
             methodCode,
             PSP: getPSP(methodCode, shopifyOrder?.payment_details?.credit_card_company),
             id: payment.id,
