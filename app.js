@@ -344,8 +344,11 @@ const createOrderRequest = (orders, molliePayments, paypalPayments) => {
     return orders.map(async order => {
         await sleep(1000)
         const xml = await fs.readFile('request/createOrder.xml', 'utf-8');
+        console.log("xml", xml);
         const adaptedData = await orderRequestAdapter(order, molliePayments, paypalPayments)
+        console.log("adaptedData", adaptedData);
         const output = Mustache.render(xml, adaptedData);
+        console.log("output", output);
         const soapOrderRequest = soapRequest({ url: url, headers: sampleHeaders, xml: output, timeout: 200000 });
         await markOrderAsPlaced(order.id)
         return soapOrderRequest
